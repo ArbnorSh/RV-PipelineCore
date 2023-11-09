@@ -134,5 +134,25 @@ begin
         reg_write_w => reg_write_w,
         result_src_w => result_src_w,
         rd_w => rd_w);
-
+    
+    hazard_block: hazard_unit(
+        rs1_d => rs1_d,
+        rs2_d => rs2_d,
+        rs1_e => rs1_e,
+        rs2_e => rs2_e,
+        rd_e => rd_e,
+        rd_m => rd_m,
+        rd_w => rd_w,
+        pc_src_e => pc_src_e,
+        result_src_b0_e => result_src_b0_e,
+        reg_write_m => reg_write_m,
+        reg_write_w => reg_write_w,
+        forward_a_e => forward_a_e,
+        forward_b_e => forward_b_e,
+        stall_f => stall_f,
+        stall_d => stall_d,
+        flush_d => flush_d,
+        flush_e => flush_e
+        );
+        
 end Behavioral;
