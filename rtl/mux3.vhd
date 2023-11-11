@@ -16,6 +16,6 @@ begin
 
     y <= a when s = "00" else
          b when s = "01" else
-         c when s = "10";
+         c;
 
 end Behavioral;

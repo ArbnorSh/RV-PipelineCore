@@ -124,7 +124,7 @@ architecture Behavioral of datapath is
     signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e: std_logic_vector(31 downto 0);
     signal src_a_forward_e, alu_result_e, write_data_e, pc_plus4_e, pc_target_e: std_logic_vector(31 downto 0);
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w: std_logic_vector(31 downto 0);
-    signal output_from_d_reg: std_logic_vector(94 downto 0);
+    signal output_from_d_reg: std_logic_vector(95 downto 0);
     signal output_from_e_reg: std_logic_vector(174 downto 0);
     signal output_from_m_reg, output_from_w_reg: std_logic_vector(100 downto 0);
     
@@ -155,7 +155,7 @@ begin
         reset => reset,
         clear => flush_d,
         enable => (not stall_d),
-        d => (instr_f, pc_f, pc_plus4_f),
+        d => (instr_f & pc_f & pc_plus4_f),
         q => output_from_d_reg
         );
     
@@ -189,7 +189,7 @@ begin
         clk => clk,
         reset => reset,
         clear => flush_e,
-        d => (rd1_d, rd2_d, pc_d, rs1_d, rs2_d, rd_d, imm_ext_d, pc_plus4_d),
+        d => (rd1_d & rd2_d & pc_d & rs1_d & rs2_d & rd_d & imm_ext_d & pc_plus4_d),
         q => output_from_e_reg
         );
     
@@ -228,7 +228,7 @@ begin
     alu_block: alu port map(
         a => src_a_e,
         b => src_b_e,
-        alucontrol => (3 => '0', 2 downto 0 => alu_control_e),
+        alucontrol => ('0' & alu_control_e),
         result => alu_result_e,
         zero => zero_e,
         negative => open,
@@ -245,7 +245,7 @@ begin
     register_memory: flopr generic map(101) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_e, write_data_e, rd_e, pc_plus4_e),
+        d => (alu_result_e & write_data_e & rd_e & pc_plus4_e),
         q => output_from_m_reg
         );
         
@@ -254,7 +254,7 @@ begin
     register_writeback: flopr generic map(101) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_m, read_data_m, rd_m, pc_plus4_m),
+        d => (alu_result_m & read_data_m & rd_m & pc_plus4_m),
         q => output_from_w_reg
         );
         

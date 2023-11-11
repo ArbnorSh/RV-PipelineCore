@@ -66,9 +66,9 @@ architecture Behavioral of control_unit is
     signal result_src_d, result_src_e, result_src_m: std_logic_vector(1 downto 0);
     signal mem_write_d, mem_write_e: std_logic;
     signal alu_op_d: std_logic_vector(1 downto 0);
-    signal alu_control_d: std_logic_vector(2 downto 0);
+    signal alu_control_d, alu_control_tmp_e: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(10 downto 0);
+    signal output_from_e_floprc: std_logic_vector(11 downto 0);
     signal output_from_m_flopr: std_logic_vector(3 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
     
@@ -87,6 +87,7 @@ begin
         alu_src_b => alu_src_b_d,
         
         imm_src => imm_src_d,
+        reg_write => reg_write_d,
         alu_op => alu_op_d);
     
     alu_dec: alu_decoder port map(
@@ -96,7 +97,7 @@ begin
         alu_op => alu_op_d,
         alu_control => alu_control_d);
     
-    control_reg_e: floprc generic map(11) 
+    control_reg_e: floprc generic map(12)
         port map(
             clk => clk, 
             reset => reset, 
@@ -107,7 +108,9 @@ begin
         );
     
     (reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
-         alu_control_e, alu_src_a_e, alu_src_b_e) <= output_from_e_floprc;
+     alu_control_tmp_e, alu_src_a_e, alu_src_b_e) <= output_from_e_floprc;
+    
+    alu_control_e <= alu_control_tmp_e(2 downto 0);
          
     pc_src_e <= (branch_e and zero_e) or jump_e;
     result_src_b0_e <= result_src_e(0);
@@ -116,21 +119,21 @@ begin
         port map(
             clk => clk,
             reset => reset,
-            d => (reg_write_e, result_src_e, mem_write_e),
+            d => (reg_write_e, result_src_e(1), result_src_e(0), mem_write_e),
             q => output_from_m_flopr
         );
         
-    (reg_write_m, result_src_m, mem_write_m) <= output_from_m_flopr;
+    (reg_write_m, result_src_m(1), result_src_m(0), mem_write_m) <= output_from_m_flopr;
     
     control_reg_w: flopr generic map(3)
         port map(
             clk => clk,
             reset => reset,
-            d => (reg_write_m, result_src_m),
+            d => (reg_write_m & result_src_m),
             q => output_from_w_flopr
         );
         
-    (reg_write_w, result_src_w) <= output_from_w_flopr;
+    (reg_write_w, result_src_w(1), result_src_w(0)) <= output_from_w_flopr;
         
 
 end Behavioral;

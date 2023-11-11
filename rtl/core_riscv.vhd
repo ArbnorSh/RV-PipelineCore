@@ -64,6 +64,14 @@ architecture Behavioral of core_riscv is
                rd_e, rd_m, rd_w : out STD_LOGIC_VECTOR(4 downto 0));
     end component;
     
+    component hazard_unit is
+        Port ( rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
+               pc_src_e, result_src_b0_e : in STD_LOGIC;
+               reg_write_m, reg_write_w : in STD_LOGIC;
+               forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
+               stall_f, stall_d, flush_d, flush_e : out STD_LOGIC);
+    end component;
+    
     signal op_d : std_logic_vector(6 downto 0);
     signal funct3_d, imm_src_d, alu_control_e: std_logic_vector(2 downto 0);
     signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e: std_logic;
@@ -135,7 +143,7 @@ begin
         result_src_w => result_src_w,
         rd_w => rd_w);
     
-    hazard_block: hazard_unit(
+    hazard_block: hazard_unit port map(
         rs1_d => rs1_d,
         rs2_d => rs2_d,
         rs1_e => rs1_e,

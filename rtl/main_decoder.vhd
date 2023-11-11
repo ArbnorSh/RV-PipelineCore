@@ -18,7 +18,7 @@ architecture Behavioral of main_decoder is
     
     
     -- out_control = reg_write, imm_src, alu_src_a, alu_src_b, mem_write, result_src, branch, alu_op, jump
-    signal out_control: std_logic_vector(13 downto 0);
+    signal out_control: std_logic_vector(12 downto 0);
 begin
 
     process(op)
@@ -47,7 +47,7 @@ begin
             when "0110111" =>
                 out_control <= b"1_100_1_1_0_00_0_00_0";
             when others =>
-                out_control <= "0000000000000000";
+                out_control <= "0000000000000";
         end case;
         
     end process;

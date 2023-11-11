@@ -19,32 +19,45 @@ architecture Behavioral of register_file is
     signal reg_mem: reg_mem_t;
 begin
 
-    process(clk, write_enable)
+    process(clk)
     begin
-        
-        if rising_edge(clk) and write_enable = '1' then
-            reg_mem(to_integer(a3)) <= write_data;
-        end if;
+        if falling_edge(clk) then
+            if write_enable = '1' then
+                reg_mem(to_integer(a3)) <= write_data;
+            end if;
     
+        end if;
     end process;
     
-    process(a1, a2)
-    begin
-    
-        if (to_integer(a1) = 0) then
-            rd1 <= (others => '0');
-        else
-            rd1 <= reg_mem(to_integer(a1));
-        end if;
+    rd1 <= reg_mem(to_integer(a1)) when to_integer(a1) /= 0 else (others => '0');
+    rd2 <= reg_mem(to_integer(a2)) when to_integer(a2) /= 0 else (others => '0');
+
+--    process(clk)
+--    begin
         
-        if (to_integer(a2) = 0) then
-            rd2 <= (others => '0');
-        else
-            rd2 <= reg_mem(to_integer(a2));
-        end if;
+--        if falling_edge(clk) and write_enable = '1' then
+--            reg_mem(to_integer(a3)) <= write_data;
+--        end if;
+    
+--    end process;
+    
+--    process(a1, a2)
+--    begin
+    
+--        if (to_integer(a1) = 0) then
+--            rd1 <= (others => '0');
+--        else
+--            rd1 <= reg_mem(to_integer(a1));
+--        end if;
+        
+--        if (to_integer(a2) = 0) then
+--            rd2 <= (others => '0');
+--        else
+--            rd2 <= reg_mem(to_integer(a2));
+--        end if;
     
     
-    end process;
+--    end process;
 
 
 end Behavioral;

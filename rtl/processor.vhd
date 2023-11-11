@@ -4,7 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity processor is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
-           read_data : in STD_LOGIC_VECTOR (31 downto 0);
+           read_data : out STD_LOGIC_VECTOR (31 downto 0);
            mem_write : out STD_LOGIC;
            write_data : out STD_LOGIC_VECTOR (31 downto 0);
            data_address : out STD_LOGIC_VECTOR (31 downto 0));
@@ -37,7 +37,6 @@ architecture Behavioral of processor is
     end component;
     
     signal pc_f, instr_f: std_logic_vector(31 downto 0);
-    signal read_data_memory: std_logic_vector(31 downto 0);
 begin
 
     riscv: core_riscv port map(
@@ -51,10 +50,10 @@ begin
         alu_result_m => data_address,
         write_data_m => write_data,
         
-        read_data_m => read_data_memory);
+        read_data_m => read_data);
     
     imem: instruction_memory port map(pc_f, instr_f);
     
-    dmem: data_memory port map(clk, data_address, write_data, mem_write, "1111", read_data_memory);
+    dmem: data_memory port map(clk, data_address, write_data, mem_write, "1111", read_data);
 
 end Behavioral;
