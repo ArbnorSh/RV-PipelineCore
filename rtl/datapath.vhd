@@ -21,6 +21,8 @@ entity datapath is
            alu_src_a_e : in STD_LOGIC;
            alu_src_b_e : in STD_LOGIC;
            zero_e : out STD_LOGIC;
+           negative_e : out STD_LOGIC;
+           overflow_e : out STD_LOGIC;
            mem_write_m : in STD_LOGIC;
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
@@ -231,9 +233,9 @@ begin
         alucontrol => ('0' & alu_control_e),
         result => alu_result_e,
         zero => zero_e,
-        negative => open,
+        negative => negative_e,
         carry => open,
-        overflow => open
+        overflow => overflow_e
         );
         
     branch_add: adder port map(

@@ -17,12 +17,14 @@ architecture Behavioral of core_riscv is
     component control_unit is
         Port ( clk : in STD_LOGIC;
                reset : in STD_LOGIC;
-               opcode : in STD_LOGIC_VECTOR (6 downto 0);
-               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
-               funct7_b5 : in STD_LOGIC;
+               opcode_d : in STD_LOGIC_VECTOR (6 downto 0);
+               funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
+               funct7_b5_d : in STD_LOGIC;
                imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
                flush_e : in STD_LOGIC;
                zero_e : in STD_LOGIC;
+               negative_e : in STD_LOGIC;
+               overflow_e : in STD_LOGIC;
                pc_src_e : out STD_LOGIC;
                alu_control_e : out STD_LOGIC_VECTOR (2 downto 0);
                alu_src_a_e : out STD_LOGIC;
@@ -54,6 +56,8 @@ architecture Behavioral of core_riscv is
                alu_src_a_e : in STD_LOGIC;
                alu_src_b_e : in STD_LOGIC;
                zero_e : out STD_LOGIC;
+               negative_e : out STD_LOGIC;
+               overflow_e : out STD_LOGIC;
                mem_write_m : in STD_LOGIC;
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
@@ -75,7 +79,7 @@ architecture Behavioral of core_riscv is
     signal op_d : std_logic_vector(6 downto 0);
     signal funct3_d, imm_src_d, alu_control_e: std_logic_vector(2 downto 0);
     signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e: std_logic;
-    signal result_src_b0_e, reg_write_m, reg_write_w: std_logic;
+    signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, flush_d, flush_e: std_logic;
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
     signal rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w: std_logic_vector(4 downto 0);
@@ -85,14 +89,18 @@ begin
         clk => clk,
         reset => reset,
         
-        opcode => op_d,
-        funct3 => funct3_d,
-        funct7_b5 => funct_7_b5_d,
+        opcode_d => op_d,
+        funct3_d => funct3_d,
+        funct7_b5_d => funct_7_b5_d,
         
         imm_src_d => imm_src_d,
         
         flush_e   => flush_e,
+        
         zero_e    => zero_e,
+        negative_e => negative_e,
+        overflow_e => overflow_e,
+        
         pc_src_e  => pc_src_e,
         alu_control_e => alu_control_e,
         alu_src_a_e => alu_src_a_e,

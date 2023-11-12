@@ -4,12 +4,14 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity control_unit is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
-           opcode : in STD_LOGIC_VECTOR (6 downto 0);
-           funct3 : in STD_LOGIC_VECTOR (2 downto 0);
-           funct7_b5 : in STD_LOGIC;
+           opcode_d : in STD_LOGIC_VECTOR (6 downto 0);
+           funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
+           funct7_b5_d : in STD_LOGIC;
            imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
            flush_e : in STD_LOGIC;
            zero_e : in STD_LOGIC;
+           negative_e : in STD_LOGIC;
+           overflow_e : in STD_LOGIC;
            pc_src_e : out STD_LOGIC;
            alu_control_e : out STD_LOGIC_VECTOR (2 downto 0);
            alu_src_a_e : out STD_LOGIC;
@@ -60,6 +62,15 @@ architecture Behavioral of control_unit is
                q : out STD_LOGIC_VECTOR (width - 1 downto 0));
     end component;
     
+    component branch_check is
+        Port ( branch: in STD_LOGIC;
+               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               zero : in STD_LOGIC;
+               negative : in STD_LOGIC;
+               overflow : in STD_LOGIC;
+               take_branch : out STD_LOGIC);
+    end component;
+    
     signal reg_write_d, reg_write_e: std_logic;
     signal branch_d, branch_e: std_logic;
     signal jump_d, jump_e: std_logic;
@@ -68,14 +79,16 @@ architecture Behavioral of control_unit is
     signal alu_op_d: std_logic_vector(1 downto 0);
     signal alu_control_d, alu_control_tmp_e: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(11 downto 0);
+    signal output_from_e_floprc: std_logic_vector(14 downto 0);
     signal output_from_m_flopr: std_logic_vector(3 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
+    signal funct3_e: std_logic_vector(2 downto 0);
+    signal take_branch_e: std_logic;
     
 begin
     
     main_dec: main_decoder port map(
-        op => opcode,
+        op => opcode_d,
         
         branch => branch_d,
         jump => jump_d,
@@ -91,28 +104,37 @@ begin
         alu_op => alu_op_d);
     
     alu_dec: alu_decoder port map(
-        op_5 => opcode(5),
-        funct3 => funct3,
-        func7_5 => funct7_b5,
+        op_5 => opcode_d(5),
+        funct3 => funct3_d,
+        func7_5 => funct7_b5_d,
         alu_op => alu_op_d,
         alu_control => alu_control_d);
     
-    control_reg_e: floprc generic map(12)
+    control_reg_e: floprc generic map(15)
         port map(
             clk => clk, 
             reset => reset, 
             clear => flush_e,
-            d => (reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
+            d => (funct3_d & reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
              alu_control_d & alu_src_a_d & alu_src_b_d),
             q => output_from_e_floprc
         );
     
-    (reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
+    (funct3_e, reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
      alu_control_tmp_e, alu_src_a_e, alu_src_b_e) <= output_from_e_floprc;
     
     alu_control_e <= alu_control_tmp_e(2 downto 0);
+    
+    branch_block: branch_check port map(
+        branch => branch_e,
+        funct3 => funct3_e,
+        zero => zero_e,
+        negative => negative_e,
+        overflow => overflow_e,
+        take_branch => take_branch_e
+        );
          
-    pc_src_e <= (branch_e and zero_e) or jump_e;
+    pc_src_e <= take_branch_e or jump_e;
     result_src_b0_e <= result_src_e(0);
     
     control_reg_m: flopr generic map(4)
