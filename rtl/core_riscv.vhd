@@ -25,6 +25,7 @@ architecture Behavioral of core_riscv is
                zero_e : in STD_LOGIC;
                negative_e : in STD_LOGIC;
                overflow_e : in STD_LOGIC;
+               carry_e : in STD_LOGIC;
                pc_src_e : out STD_LOGIC;
                alu_control_e : out STD_LOGIC_VECTOR (2 downto 0);
                alu_src_a_e : out STD_LOGIC;
@@ -58,6 +59,7 @@ architecture Behavioral of core_riscv is
                zero_e : out STD_LOGIC;
                negative_e : out STD_LOGIC;
                overflow_e : out STD_LOGIC;
+               carry_e : out STD_LOGIC;
                mem_write_m : in STD_LOGIC;
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
@@ -78,7 +80,7 @@ architecture Behavioral of core_riscv is
     
     signal op_d : std_logic_vector(6 downto 0);
     signal funct3_d, imm_src_d, alu_control_e: std_logic_vector(2 downto 0);
-    signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e: std_logic;
+    signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
     signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, flush_d, flush_e: std_logic;
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
@@ -100,6 +102,7 @@ begin
         zero_e    => zero_e,
         negative_e => negative_e,
         overflow_e => overflow_e,
+        carry_e => carry_e,
         
         pc_src_e  => pc_src_e,
         alu_control_e => alu_control_e,
@@ -136,7 +139,12 @@ begin
         alu_control_e => alu_control_e,
         alu_src_a_e => alu_src_a_e,
         alu_src_b_e => alu_src_b_e,
+        
         zero_e => zero_e,
+        negative_e => negative_e,
+        overflow_e => overflow_e,
+        carry_e => carry_e,
+        
         rs1_e => rs1_e,
         rs2_e => rs2_e,
         rd_e => rd_e,

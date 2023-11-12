@@ -1,0 +1,36 @@
+# s0 = button, s1 = amt
+#addi s0, zero, 0x01
+#case1:
+#addi t0, zero, 1           # t0 = 1
+#bne s0, t0, case2          # button = = 1?
+#addi s1, zero, 20           # if yes, amt = 20
+#j done                      # break out of case
+#case2:
+#addi t0, zero, 2            # t0 = 2
+#bne s0, t0, case3           # button = = 2?
+#addi s1, zero, 50           # if yes, amt = 50
+#j done                      # break out of case
+#case3:
+#addi t0, zero, 3            # t0 = 3
+#bne s0, t0, default         # button = = 3?
+#addi s1, zero, 100          # if yes, amt = 100
+#j done                      # break out of case
+#default:
+#add s1, zero, zero          # amt=0
+#done:
+#sw s1, 88(s0)               # [89] = 20 
+00100413
+00100293
+00541663
+01400493
+0280006f
+00200293
+00541663
+03200493
+0180006f
+00300293
+00541663
+06400493
+0080006f
+000004b3
+04942c23

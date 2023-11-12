@@ -7,6 +7,7 @@ entity branch_check is
            zero : in STD_LOGIC;
            negative : in STD_LOGIC;
            overflow : in STD_LOGIC;
+           carry: in STD_LOGIC;
            take_branch : out STD_LOGIC);
 end branch_check;
 
@@ -16,9 +17,9 @@ begin
 
     process(all)
     begin
-
+        
         if branch = '1' then
-
+            
             case funct3 is
                 when "000" =>
                     -- beq
@@ -29,14 +30,23 @@ begin
                 when "100" =>
                     -- blt
                     take_branch <= negative xor overflow;
+                when "110" =>
+                    -- bltu
+                    take_branch <= not carry;
+                when "101" =>
+                    -- bge
+                    take_branch <= not (negative xor overflow);
+                when "111" =>
+                    -- bgeu
+                    take_branch <= carry;
                 when others =>
                     take_branch <= '0';
             end case;
-
+                    
         else
             take_branch <= '0';
         end if;
-
+    
     end process;
 
 

@@ -12,6 +12,7 @@ entity control_unit is
            zero_e : in STD_LOGIC;
            negative_e : in STD_LOGIC;
            overflow_e : in STD_LOGIC;
+           carry_e : in STD_LOGIC;
            pc_src_e : out STD_LOGIC;
            alu_control_e : out STD_LOGIC_VECTOR (2 downto 0);
            alu_src_a_e : out STD_LOGIC;
@@ -68,6 +69,7 @@ architecture Behavioral of control_unit is
                zero : in STD_LOGIC;
                negative : in STD_LOGIC;
                overflow : in STD_LOGIC;
+               carry: in STD_LOGIC;
                take_branch : out STD_LOGIC);
     end component;
     
@@ -131,6 +133,7 @@ begin
         zero => zero_e,
         negative => negative_e,
         overflow => overflow_e,
+        carry => carry_e,
         take_branch => take_branch_e
         );
          

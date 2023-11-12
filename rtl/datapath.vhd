@@ -23,6 +23,7 @@ entity datapath is
            zero_e : out STD_LOGIC;
            negative_e : out STD_LOGIC;
            overflow_e : out STD_LOGIC;
+           carry_e : out STD_LOGIC;
            mem_write_m : in STD_LOGIC;
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
@@ -234,7 +235,7 @@ begin
         result => alu_result_e,
         zero => zero_e,
         negative => negative_e,
-        carry => open,
+        carry => carry_e,
         overflow => overflow_e
         );
         
