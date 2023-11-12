@@ -17,6 +17,7 @@ architecture Behavioral of processor is
            pc_f : out STD_LOGIC_VECTOR (31 downto 0);
            instruction_f : in STD_LOGIC_VECTOR (31 downto 0);
            mem_write_m : out STD_LOGIC;
+           mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0));
@@ -37,6 +38,7 @@ architecture Behavioral of processor is
     end component;
     
     signal pc_f, instr_f: std_logic_vector(31 downto 0);
+    signal bytes_to_write: std_logic_vector(3 downto 0);
 begin
 
     riscv: core_riscv port map(
@@ -49,11 +51,12 @@ begin
         mem_write_m => mem_write, 
         alu_result_m => data_address,
         write_data_m => write_data,
+        mem_control_m => bytes_to_write,
         
         read_data_m => read_data);
     
     imem: instruction_memory port map(pc_f, instr_f);
     
-    dmem: data_memory port map(clk, data_address, write_data, mem_write, "1111", read_data);
+    dmem: data_memory port map(clk, data_address, write_data, mem_write, bytes_to_write, read_data);
 
 end Behavioral;

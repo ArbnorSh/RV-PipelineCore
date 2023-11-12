@@ -7,6 +7,7 @@ entity core_riscv is
            pc_f : out STD_LOGIC_VECTOR (31 downto 0);
            instruction_f : in STD_LOGIC_VECTOR (31 downto 0);
            mem_write_m : out STD_LOGIC;
+           mem_control_m : out STD_LOGIC_VECTOR(3 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0));
@@ -35,6 +36,7 @@ architecture Behavioral of core_riscv is
                mem_write_m : out STD_LOGIC;
                reg_write_m : out STD_LOGIC;
                mask_src_m : out STD_LOGIC_VECTOR (2 downto 0);
+               mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
                reg_write_w : out STD_LOGIC;
                result_src_w : out STD_LOGIC_VECTOR (1 downto 0));
     end component;
@@ -119,6 +121,7 @@ begin
         mem_write_m => mem_write_m,
         reg_write_m => reg_write_m,
         mask_src_m => mask_src_m,
+        mem_control_m => mem_control_m,
         
         reg_write_w => reg_write_w,
         result_src_w => result_src_w);

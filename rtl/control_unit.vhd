@@ -22,6 +22,7 @@ entity control_unit is
            mem_write_m : out STD_LOGIC;
            reg_write_m : out STD_LOGIC;
            mask_src_m : out STD_LOGIC_VECTOR (2 downto 0);
+           mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
            reg_write_w : out STD_LOGIC;
            result_src_w : out STD_LOGIC_VECTOR (1 downto 0));
 end control_unit;
@@ -83,16 +84,22 @@ architecture Behavioral of control_unit is
                mask_src : out STD_LOGIC_VECTOR (2 downto 0));
     end component;
     
+    component memory_decoder is
+        Port ( mem_write : in STD_LOGIC;
+               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               mem_control : out STD_LOGIC_VECTOR (3 downto 0));
+    end component;
+    
     signal reg_write_d, reg_write_e: std_logic;
     signal branch_d, branch_e: std_logic;
     signal jump_d, jump_e: std_logic;
     signal result_src_d, result_src_e, result_src_m: std_logic_vector(1 downto 0);
     signal mem_write_d, mem_write_e: std_logic;
     signal alu_op_d: std_logic_vector(1 downto 0);
-    signal alu_control_d: std_logic_vector(3 downto 0);
+    signal alu_control_d, mem_control_d, mem_control_e: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(18 downto 0);
-    signal output_from_m_flopr: std_logic_vector(6 downto 0);
+    signal output_from_e_floprc: std_logic_vector(22 downto 0);
+    signal output_from_m_flopr: std_logic_vector(10 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
     signal funct3_e: std_logic_vector(2 downto 0);
     signal take_branch_e, mask_op_d, mask_op_e, mask_op_m, pc_target_src_d: std_logic;
@@ -132,18 +139,25 @@ begin
         alu_op => alu_op_d,
         alu_control => alu_control_d);
     
-    control_reg_e: floprc generic map(19)
+    mem_dec: memory_decoder port map(
+        mem_write => mem_write_d,
+        funct3 => funct3_d,
+        mem_control => mem_control_d
+        );
+    
+    control_reg_e: floprc generic map(23)
         port map(
             clk => clk, 
             reset => reset, 
             clear => flush_e,
             d => (funct3_d & reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
-             alu_control_d & alu_src_a_d & alu_src_b_d & mask_src_d & pc_target_src_d),
+             alu_control_d & alu_src_a_d & alu_src_b_d & mask_src_d & pc_target_src_d & mem_control_d),
             q => output_from_e_floprc
         );
     
     (funct3_e, reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
-     alu_control_e, alu_src_a_e, alu_src_b_e, mask_src_e, pc_target_src_e) <= output_from_e_floprc;
+     alu_control_e, alu_src_a_e, alu_src_b_e, mask_src_e, pc_target_src_e,
+     mem_control_e) <= output_from_e_floprc;
     
     branch_block: branch_check port map(
         branch => branch_e,
@@ -158,15 +172,16 @@ begin
     pc_src_e <= take_branch_e or jump_e;
     result_src_b0_e <= result_src_e(0);
     
-    control_reg_m: flopr generic map(7)
+    control_reg_m: flopr generic map(11)
         port map(
             clk => clk,
             reset => reset,
-            d => (reg_write_e & result_src_e & mem_write_e & mask_src_e),
+            d => (reg_write_e & result_src_e & mem_write_e & mask_src_e, mem_control_e),
             q => output_from_m_flopr
         );
         
-    (reg_write_m, result_src_m(1), result_src_m(0), mem_write_m, mask_src_m) <= output_from_m_flopr;
+    (reg_write_m, result_src_m(1), result_src_m(0), mem_write_m,
+     mask_src_m, mem_control_m) <= output_from_m_flopr;
     
     control_reg_w: flopr generic map(3)
         port map(
