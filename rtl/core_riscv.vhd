@@ -27,12 +27,13 @@ architecture Behavioral of core_riscv is
                overflow_e : in STD_LOGIC;
                carry_e : in STD_LOGIC;
                pc_src_e : out STD_LOGIC;
-               alu_control_e : out STD_LOGIC_VECTOR (2 downto 0);
+               alu_control_e : out STD_LOGIC_VECTOR (3 downto 0);
                alu_src_a_e : out STD_LOGIC;
                alu_src_b_e : out STD_LOGIC;
                result_src_b0_e : out STD_LOGIC;
                mem_write_m : out STD_LOGIC;
                reg_write_m : out STD_LOGIC;
+               mask_src_m : out STD_LOGIC_VECTOR (2 downto 0);
                reg_write_w : out STD_LOGIC;
                result_src_w : out STD_LOGIC_VECTOR (1 downto 0));
     end component;
@@ -53,7 +54,7 @@ architecture Behavioral of core_riscv is
                forward_a_e : in STD_LOGIC_VECTOR (1 downto 0);
                forward_b_e : in STD_LOGIC_VECTOR (1 downto 0);
                pc_src_e : in STD_LOGIC;
-               alu_control_e : in STD_LOGIC_VECTOR (2 downto 0);
+               alu_control_e : in STD_LOGIC_VECTOR (3 downto 0);
                alu_src_a_e : in STD_LOGIC;
                alu_src_b_e : in STD_LOGIC;
                zero_e : out STD_LOGIC;
@@ -64,6 +65,7 @@ architecture Behavioral of core_riscv is
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
                read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
+               mask_src_m : in STD_LOGIC_VECTOR (2 downto 0);
                reg_write_w : in STD_LOGIC;
                result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
                rs1_d, rs2_d, rs1_e, rs2_e : out STD_LOGIC_VECTOR (4 downto 0);
@@ -79,12 +81,13 @@ architecture Behavioral of core_riscv is
     end component;
     
     signal op_d : std_logic_vector(6 downto 0);
-    signal funct3_d, imm_src_d, alu_control_e: std_logic_vector(2 downto 0);
+    signal funct3_d, imm_src_d, mask_src_m: std_logic_vector(2 downto 0);
     signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
     signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, flush_d, flush_e: std_logic;
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
     signal rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w: std_logic_vector(4 downto 0);
+    signal alu_control_e: std_logic_vector(3 downto 0);
 begin
 
     control_unit_block: control_unit port map(
@@ -112,6 +115,8 @@ begin
         
         mem_write_m => mem_write_m,
         reg_write_m => reg_write_m,
+        mask_src_m => mask_src_m,
+        
         reg_write_w => reg_write_w,
         result_src_w => result_src_w);
         
@@ -154,6 +159,7 @@ begin
         alu_result_m => alu_result_m,
         read_data_m => read_data_m,
         rd_m => rd_m,
+        mask_src_m => mask_src_m,
         
         reg_write_w => reg_write_w,
         result_src_w => result_src_w,

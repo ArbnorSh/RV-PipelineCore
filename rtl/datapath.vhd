@@ -17,7 +17,7 @@ entity datapath is
            forward_a_e : in STD_LOGIC_VECTOR (1 downto 0);
            forward_b_e : in STD_LOGIC_VECTOR (1 downto 0);
            pc_src_e : in STD_LOGIC;
-           alu_control_e : in STD_LOGIC_VECTOR (2 downto 0);
+           alu_control_e : in STD_LOGIC_VECTOR (3 downto 0);
            alu_src_a_e : in STD_LOGIC;
            alu_src_b_e : in STD_LOGIC;
            zero_e : out STD_LOGIC;
@@ -28,6 +28,7 @@ entity datapath is
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
+           mask_src_m : in STD_LOGIC_VECTOR (2 downto 0);
            reg_write_w : in STD_LOGIC;
            result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
            rs1_d, rs2_d, rs1_e, rs2_e : out STD_LOGIC_VECTOR (4 downto 0);
@@ -121,7 +122,13 @@ architecture Behavioral of datapath is
                q : out STD_LOGIC_VECTOR (width - 1 downto 0));
     end component;
     
-    signal pc_next_f, pc_plus4_f: std_logic_vector(31 downto 0);
+    component mask_extend is
+        Port ( in_data : in STD_LOGIC_VECTOR (31 downto 0);
+               control : in STD_LOGIC_VECTOR (2 downto 0);
+               out_data : out STD_LOGIC_VECTOR (31 downto 0));
+    end component;
+    
+    signal pc_next_f, pc_plus4_f, read_data_ext_m: std_logic_vector(31 downto 0);
     signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
     signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e: std_logic_vector(31 downto 0);
@@ -231,7 +238,7 @@ begin
     alu_block: alu port map(
         a => src_a_e,
         b => src_b_e,
-        alucontrol => ('0' & alu_control_e),
+        alucontrol => alu_control_e,
         result => alu_result_e,
         zero => zero_e,
         negative => negative_e,
@@ -254,10 +261,16 @@ begin
         
     (alu_result_m, write_data_m, rd_m, pc_plus4_m) <= output_from_m_reg;
     
+    mask_block: mask_extend port map(
+        in_data => read_data_m, 
+        control => mask_src_m,
+        out_data => read_data_ext_m
+        );
+    
     register_writeback: flopr generic map(101) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_m & read_data_m & rd_m & pc_plus4_m),
+        d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m),
         q => output_from_w_reg
         );
         
