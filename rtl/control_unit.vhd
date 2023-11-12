@@ -18,6 +18,7 @@ entity control_unit is
            alu_src_a_e : out STD_LOGIC;
            alu_src_b_e : out STD_LOGIC;
            result_src_b0_e : out STD_LOGIC;
+           pc_target_src_e : out STD_LOGIC;
            mem_write_m : out STD_LOGIC;
            reg_write_m : out STD_LOGIC;
            mask_src_m : out STD_LOGIC_VECTOR (2 downto 0);
@@ -37,7 +38,8 @@ architecture Behavioral of control_unit is
                imm_src : out STD_LOGIC_VECTOR (2 downto 0);
                reg_write : out STD_LOGIC;
                alu_op : out STD_LOGIC_VECTOR (1 downto 0);
-               mask_op : out STD_LOGIC);
+               mask_op : out STD_LOGIC;
+               pc_target_src: out STD_LOGIC);
     end component;
     
     component alu_decoder is
@@ -89,11 +91,11 @@ architecture Behavioral of control_unit is
     signal alu_op_d: std_logic_vector(1 downto 0);
     signal alu_control_d: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(17 downto 0);
+    signal output_from_e_floprc: std_logic_vector(18 downto 0);
     signal output_from_m_flopr: std_logic_vector(6 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
     signal funct3_e: std_logic_vector(2 downto 0);
-    signal take_branch_e, mask_op_d, mask_op_e, mask_op_m: std_logic;
+    signal take_branch_e, mask_op_d, mask_op_e, mask_op_m, pc_target_src_d: std_logic;
     signal mask_src_d, mask_src_e: std_logic_vector(2 downto 0);
     
 begin
@@ -113,7 +115,8 @@ begin
         imm_src => imm_src_d,
         reg_write => reg_write_d,
         alu_op => alu_op_d,
-        mask_op => mask_op_d
+        mask_op => mask_op_d,
+        pc_target_src => pc_target_src_d
         );
         
     mask_dec: mask_decoder port map(
@@ -129,18 +132,18 @@ begin
         alu_op => alu_op_d,
         alu_control => alu_control_d);
     
-    control_reg_e: floprc generic map(18)
+    control_reg_e: floprc generic map(19)
         port map(
             clk => clk, 
             reset => reset, 
             clear => flush_e,
             d => (funct3_d & reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
-             alu_control_d & alu_src_a_d & alu_src_b_d & mask_src_d),
+             alu_control_d & alu_src_a_d & alu_src_b_d & mask_src_d & pc_target_src_d),
             q => output_from_e_floprc
         );
     
     (funct3_e, reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
-     alu_control_e, alu_src_a_e, alu_src_b_e, mask_src_e) <= output_from_e_floprc;
+     alu_control_e, alu_src_a_e, alu_src_b_e, mask_src_e, pc_target_src_e) <= output_from_e_floprc;
     
     branch_block: branch_check port map(
         branch => branch_e,

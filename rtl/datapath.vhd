@@ -20,6 +20,7 @@ entity datapath is
            alu_control_e : in STD_LOGIC_VECTOR (3 downto 0);
            alu_src_a_e : in STD_LOGIC;
            alu_src_b_e : in STD_LOGIC;
+           pc_target_src_e : in STD_LOGIC;
            zero_e : out STD_LOGIC;
            negative_e : out STD_LOGIC;
            overflow_e : out STD_LOGIC;
@@ -128,7 +129,7 @@ architecture Behavioral of datapath is
                out_data : out STD_LOGIC_VECTOR (31 downto 0));
     end component;
     
-    signal pc_next_f, pc_plus4_f, read_data_ext_m: std_logic_vector(31 downto 0);
+    signal pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
     signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
     signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e: std_logic_vector(31 downto 0);
@@ -205,6 +206,13 @@ begin
     
     (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e) <= output_from_e_reg;
     
+    pc_target_src_select: mux2 generic map(32) port map(
+        a => rd1_e,
+        b => pc_e,
+        s => pc_target_src_e,
+        y => pc_src_a_e
+        );
+    
     forward_a_mux_e: mux3 generic map(32) port map(
         a => rd1_e,
         b => result_w,
@@ -247,7 +255,7 @@ begin
         );
         
     branch_add: adder port map(
-        a => pc_e,
+        a => pc_src_a_e,
         b => imm_ext_e,
         y => pc_target_e
         );
