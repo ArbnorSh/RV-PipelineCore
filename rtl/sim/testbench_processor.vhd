@@ -50,7 +50,7 @@ begin
     process(clk) begin
         
         if falling_edge(clk) and mem_write = '1' then
-            if to_integer(data_address) = 89 and write_data = 20 then
+            if to_integer(data_address) = 256 and write_data = 7 then
                 report "Simulated program successfuly" severity failure;
             end if;
         end if;        

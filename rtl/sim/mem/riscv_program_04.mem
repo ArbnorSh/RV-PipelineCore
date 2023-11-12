@@ -1,0 +1,18 @@
+# s0 = pow, s1 = x
+#addi s0, zero, 1           # pow = 1
+#add s1, zero, zero         # x = 0
+#addi t0, zero, 128         # t0 = 128
+#while: beq s0, t0, done    # pow = 128?
+#slli s0, s0, 1             # pow = pow * 2
+#addi s1, s1, 1             # x = x + 1
+#j while                    # repeat loop
+#done:
+#sw s1, 128(s0)             # [256] = 7
+00100413
+000004b3
+08000293
+00540863
+00141413
+00148493
+ff5ff06f
+08942023
