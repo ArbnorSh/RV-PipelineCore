@@ -1,0 +1,105 @@
+# man strncpy
+# if succesful starting from memory address 80, string "riscv" should be stored in dmem
+#char *
+#strncpy(char *dest, const char *src, size_t n)
+#{
+#   size_t i;
+#
+#   for (i = 0; i < n && src[i] != '\0'; i++)
+#        dest[i] = src[i];
+#    for ( ; i < n; i++)
+#        dest[i] = '\0';
+#
+#   return dest;
+#}
+#
+#addi t0, zero, 100  # address where "riscv" is stored
+#addi t1, zero, 0x72 # r
+#sb t1, 0(t0)
+#addi t1, zero, 0x69 # i
+#sb t1, 1(t0)
+#addi t1, zero, 0x73 # s
+#sb t1, 2(t0)
+#addi t1, zero, 0x63 # c
+#sb t1, 3(t0)
+#addi t1, zero, 0x76 # v
+#sb t1, 4(t0)
+#addi t1, zero, 0 # '\0'
+#sb t1, 5(t0)
+#
+#addi a0, zero, 80 	# starting address of dest string
+#addi a1, t0, 0 		# starting address of src string
+#addi a2, zero, 6    # length address of src string including null
+#jal strncpy
+#
+#j end
+#
+#strncpy:
+# a0 - dest, a1 - src, a2 - n
+#addi t0, zero, 0 # i = 0
+
+#lb t1, 0(a1) # src[0]
+#for_1:
+#bge t0, a2, done_1
+#beq t1, zero, done_1
+#add t2, t0, a0
+#add t3, t0, a1
+#lb t1, 0(t3) # src[i]
+#sb t1, 0(t2) # dest[i] = src[i]
+#addi t0, t0, 1
+#lb t1, 1(t3) # src[i++] for comparison in beq
+#
+#
+#j for_1
+#
+#done_1:
+#
+#for_2:
+#bge t0, a2, done_2
+#add t2, t0, a0
+#sb zero, 0(t2) # dest[i] = '\0'
+#addi t0, t0, 1
+#
+#j for_2
+#
+#done_2:
+#add a0, a0, zero
+#jr ra
+#
+#end:
+06400293
+07200313
+00628023
+06900313
+006280a3
+07300313
+00628123
+06300313
+006281a3
+07600313
+00628223
+00000313
+006282a3
+05000513
+00028593
+00600613
+008000ef
+04c0006f
+00000293
+00058303
+02c2d263
+02030063
+00a283b3
+00b28e33
+000e0303
+00638023
+00128293
+001e0303
+fe1ff06f
+00c2da63
+00a283b3
+00038023
+00128293
+ff1ff06f
+00050533
+00008067
