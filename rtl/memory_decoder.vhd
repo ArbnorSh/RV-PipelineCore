@@ -16,10 +16,13 @@ begin
     
         if mem_write = '1' then 
             case funct3 is
+                -- sb
                 when "000" =>
                     mem_control <= "0001";
+                -- sh
                 when "001" =>
                     mem_control <= "0011";
+                -- sw
                 when others =>
                     mem_control <= "1111";
             end case;

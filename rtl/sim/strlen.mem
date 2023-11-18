@@ -1,0 +1,65 @@
+# If succesful it should write value 5 in address 116
+# 5 is length of string "hello"
+#int strlen(const char *str) {
+#    int i;
+#    for (i = 0;str[i] != '\0';i++);
+#    return i;
+#}
+# Init array to hello
+#addi s0, zero, 120  # address where "hello" is stored
+#addi t1, zero, 0x68 # h
+#sb t1, 0(s0)
+#addi t1, zero, 0x65 # e
+#sb t1, 1(s0)
+#addi t1, zero, 0x6c # l
+#sb t1, 2(s0)
+#addi t1, zero, 0x6c # l
+#sb t1, 3(s0)
+#addi t1, zero, 0x6f # o
+#sb t1, 4(s0)
+#addi t1, zero, 0 # '\0'
+#sb t1, 5(s0)
+#addi a0, s0, 0
+#jal strlen
+#sb a0, -4(s0) # [116] = 5
+#j end
+#strlen:
+# a0 = str
+#addi t0, zero, 0 # i = 0
+#lb t2, 0(a0)
+#for:
+#beq t2, zero, done
+#addi t0, t0, 1
+#add t1, t0, a0
+#lb t2, 0(t1)
+#j for
+#done:
+#addi a0, t0, 0
+#jr ra
+#end:
+07800413
+06800313
+00640023
+06500313
+006400a3
+06c00313
+00640123
+06c00313
+006401a3
+06f00313
+00640223
+00000313
+006402a3
+00040513
+00c000ef
+fea40e23
+0280006f
+00000293
+00050383
+00038a63
+00128293
+00a28333
+00030383
+ff1ff06f
+00028513
+00008067
