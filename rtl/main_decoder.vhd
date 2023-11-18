@@ -51,6 +51,9 @@ begin
             -- jalr
             when "1100111" =>
                 out_control <= b"1_000_-_-_0_--_0_--_1_0_0";
+            -- auipc
+            when "0010111" =>
+                out_control <= b"1_100_-_-_0_11_0_--_0_0_1";
             when others =>
                 out_control <= "000000000000000";
         end case;

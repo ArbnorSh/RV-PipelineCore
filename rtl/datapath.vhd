@@ -129,15 +129,25 @@ architecture Behavioral of datapath is
                out_data : out STD_LOGIC_VECTOR (31 downto 0));
     end component;
     
+    component mux4 is
+    generic(width : integer := 8);
+        Port ( a : in STD_LOGIC_VECTOR (width - 1 downto 0);
+               b : in STD_LOGIC_VECTOR (width - 1 downto 0);
+               c : in STD_LOGIC_VECTOR (width - 1 downto 0);
+               d : in STD_LOGIC_VECTOR (width - 1 downto 0);
+               s : in STD_LOGIC_VECTOR (1 downto 0);
+               y : out STD_LOGIC_VECTOR (width - 1 downto 0));
+    end component;
+    
     signal pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
     signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
-    signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e: std_logic_vector(31 downto 0);
-    signal src_a_forward_e, alu_result_e, write_data_e, pc_plus4_e, pc_target_e: std_logic_vector(31 downto 0);
-    signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w: std_logic_vector(31 downto 0);
+    signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e, src_a_forward_e: std_logic_vector(31 downto 0);
+    signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w: std_logic_vector(31 downto 0);
+    signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
     signal output_from_d_reg: std_logic_vector(95 downto 0);
     signal output_from_e_reg: std_logic_vector(174 downto 0);
-    signal output_from_m_reg, output_from_w_reg: std_logic_vector(100 downto 0);
+    signal output_from_m_reg, output_from_w_reg: std_logic_vector(132 downto 0);
     
 begin
 
@@ -260,14 +270,14 @@ begin
         y => pc_target_e
         );
         
-    register_memory: flopr generic map(101) port map(
+    register_memory: flopr generic map(133) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_e & write_data_e & rd_e & pc_plus4_e),
+        d => (alu_result_e & write_data_e & rd_e & pc_plus4_e & pc_target_e),
         q => output_from_m_reg
         );
         
-    (alu_result_m, write_data_m, rd_m, pc_plus4_m) <= output_from_m_reg;
+    (alu_result_m, write_data_m, rd_m, pc_plus4_m, pc_target_m) <= output_from_m_reg;
     
     mask_block: mask_extend port map(
         in_data => read_data_m, 
@@ -275,19 +285,20 @@ begin
         out_data => read_data_ext_m
         );
     
-    register_writeback: flopr generic map(101) port map(
+    register_writeback: flopr generic map(133) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m),
+        d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m & pc_target_m),
         q => output_from_w_reg
         );
         
-    (alu_result_w, read_data_w, rd_w, pc_plus4_w) <= output_from_w_reg;
+    (alu_result_w, read_data_w, rd_w, pc_plus4_w, pc_target_w) <= output_from_w_reg;
     
-    result_mux: mux3 generic map(32) port map(
+    result_mux: mux4 generic map(32) port map(
         a => alu_result_w,
         b => read_data_w,
         c => pc_plus4_w,
+        d => pc_target_w,
         s => result_src_w,
         y => result_w
         );
