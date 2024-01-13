@@ -83,37 +83,41 @@ begin
     
     process(wb_clk)
     begin
+        
+        if rising_edge(wb_clk) then
     
-        if wb_reset then
-            instr_wb_adr <= (others => '0');
-            instr_wb_cyc <= '0';
-            instr_wb_stb <= '0';
-            instr_port_state <= WB_IDLE;
-        else
-            case instr_port_state is
-                when WB_IDLE =>
+            if wb_reset then
+                instr_wb_adr <= (others => '0');
+                instr_wb_cyc <= '0';
+                instr_wb_stb <= '0';
+                instr_port_state <= WB_IDLE;
+            else
+                case instr_port_state is
+                    when WB_IDLE =>
+                        
+                        if instr_valid then
+                            instr_wb_adr <= instr_adr;
+                            instr_wb_cyc <= '1';
+                            instr_wb_stb <= '1';
+                            instr_port_state <= WB_ACTIVE;
+                        else
+                            instr_wb_cyc <= '0';
+                            instr_wb_stb <= '0';
+                        end if;
+                        
+                    when WB_ACTIVE =>
+                        
+                        if instr_wb_ack then
+                            instr_wb_cyc <= '0';
+                            instr_wb_stb <= '0';
+                            instr_port_state <= WB_IDLE;
+                        end if;
                     
-                    if instr_valid then
-                        instr_wb_adr <= instr_adr;
-                        instr_wb_cyc <= '1';
-                        instr_wb_stb <= '1';
-                        instr_port_state <= WB_ACTIVE;
-                    else
-                        instr_wb_cyc <= '0';
-                        instr_wb_stb <= '0';
-                    end if;
-                    
-                when WB_ACTIVE =>
-                    
-                    if instr_wb_ack then
-                        instr_wb_cyc <= '0';
-                        instr_wb_stb <= '0';
+                    when others =>
                         instr_port_state <= WB_IDLE;
-                    end if;
-                
-                when others =>
-                    instr_port_state <= WB_IDLE;
-            end case;
+                end case;
+            
+            end if;
         
         end if;
     
@@ -128,44 +132,48 @@ begin
     process(wb_clk)
     begin
     
-        if wb_reset then
-            d_wb_adr <= (others => '0');
-            d_wb_data_w <= (others => '0');
-            d_wb_cyc <= '0';
-            d_wb_stb <= '0';
-            d_wb_we <= '0';
-            d_wb_sel <= (others => '0');
-            d_port_state <= WB_IDLE;
-        else
-            case d_port_state is
-                when WB_IDLE =>
+        if rising_edge(wb_clk) then
+    
+            if wb_reset then
+                d_wb_adr <= (others => '0');
+                d_wb_data_w <= (others => '0');
+                d_wb_cyc <= '0';
+                d_wb_stb <= '0';
+                d_wb_we <= '0';
+                d_wb_sel <= (others => '0');
+                d_port_state <= WB_IDLE;
+            else
+                case d_port_state is
+                    when WB_IDLE =>
+                        
+                        if d_valid then
+                            d_wb_adr <= d_adr;
+                            d_wb_data_w <= d_data_w;
+                            d_wb_we <= d_we;
+                            d_wb_sel <= d_sel;
+                            d_wb_cyc <= '1';
+                            d_wb_stb <= '1';
+                            d_port_state <= WB_ACTIVE;
+                        else
+                            d_wb_cyc <= '0';
+                            d_wb_stb <= '0';
+                            d_wb_we <= '0';
+                        end if;
+                        
+                    when WB_ACTIVE =>
+                        
+                        if d_wb_ack then
+                            d_wb_cyc <= '0';
+                            d_wb_stb <= '0';
+                            d_wb_we <= '0';
+                            d_port_state <= WB_IDLE;
+                        end if;
                     
-                    if d_valid then
-                        d_wb_adr <= d_adr;
-                        d_wb_data_w <= d_data_w;
-                        d_wb_we <= d_we;
-                        d_wb_sel <= d_sel;
-                        d_wb_cyc <= '1';
-                        d_wb_stb <= '1';
-                        d_port_state <= WB_ACTIVE;
-                    else
-                        d_wb_cyc <= '0';
-                        d_wb_stb <= '0';
-                        d_wb_we <= '0';
-                    end if;
-                    
-                when WB_ACTIVE =>
-                    
-                    if d_wb_ack then
-                        d_wb_cyc <= '0';
-                        d_wb_stb <= '0';
-                        d_wb_we <= '0';
+                    when others =>
                         d_port_state <= WB_IDLE;
-                    end if;
-                
-                when others =>
-                    d_port_state <= WB_IDLE;
-            end case;
+                end case;
+            
+            end if;
         
         end if;
     
