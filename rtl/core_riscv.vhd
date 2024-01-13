@@ -4,13 +4,21 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity core_riscv is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
-           pc_f : out STD_LOGIC_VECTOR (31 downto 0);
-           instruction_f : in STD_LOGIC_VECTOR (31 downto 0);
-           mem_write_m : out STD_LOGIC;
-           mem_control_m : out STD_LOGIC_VECTOR(3 downto 0);
-           alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
-           write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
-           read_data_m : in STD_LOGIC_VECTOR (31 downto 0));
+           
+           -- Instruction Wishbone Port
+           instr_adr : out STD_LOGIC_VECTOR(31 downto 0);
+           instr_data : in STD_LOGIC_VECTOR(31 downto 0);
+           instr_valid : out STD_LOGIC;
+           instr_ack : in STD_LOGIC;
+           
+           -- Data Wishbone Port
+           d_adr : out STD_LOGIC_VECTOR(31 downto 0);
+           d_data_w : out STD_LOGIC_VECTOR(31 downto 0);
+           d_data_r : in STD_LOGIC_VECTOR(31 downto 0);
+           d_sel : out STD_LOGIC_VECTOR(3 downto 0);
+           d_we : out STD_LOGIC;
+           d_valid : out STD_LOGIC;
+           d_ack : in STD_LOGIC);
 end core_riscv;
 
 architecture Behavioral of core_riscv is
@@ -92,6 +100,13 @@ architecture Behavioral of core_riscv is
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
     signal rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w: std_logic_vector(4 downto 0);
     signal alu_control_e: std_logic_vector(3 downto 0);
+    
+    signal is_instruction_valid, instruction_ack, data_ack : std_logic;
+    signal pc_f, instruction_f, alu_result_m : std_logic_vector(31 downto 0);
+    signal read_data_m, write_data_m : std_logic_vector(31 downto 0);
+    signal mem_write_m : std_logic;
+    signal mem_control_m : std_logic_vector(3 downto 0);
+
 begin
 
     control_unit_block: control_unit port map(
@@ -191,5 +206,21 @@ begin
         flush_d => flush_d,
         flush_e => flush_e
         );
+     
+     is_instruction_valid <= not reset;
+     
+     instr_adr <= pc_f;
+     instruction_f <= instr_data;
+     instr_valid <= is_instruction_valid;
+     instruction_ack <= instr_ack;
+     
+     d_adr <= alu_result_m;
+     read_data_m <= d_data_r;
+     d_data_w <= write_data_m;
+     d_sel <= mem_control_m;
+     d_we <= mem_write_m;
+     -- TODO change to load store
+     d_valid <= is_instruction_valid;
+     data_ack <= d_ack;
         
 end Behavioral;
