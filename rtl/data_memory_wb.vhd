@@ -23,8 +23,6 @@ architecture Behavioral of data_memory_wb is
     
     signal address: std_logic_vector(29 downto 0);
     signal write_enable : std_logic_vector(3 downto 0);
-    
-    signal error : std_logic := '0';
 begin
 
     write_enable <= ( 3 downto 0 => wb_we and wb_stb) and wb_sel;
@@ -38,7 +36,7 @@ begin
             if (wb_rst = '1') then
                 wb_ack <= '0';
             else
-                wb_ack <= wb_stb and (not wb_ack) and (not error);
+                wb_ack <= wb_stb and (not wb_ack);
             end if;
         
         end if;
@@ -61,7 +59,7 @@ begin
                     mem(to_integer(unsigned(address)))(31 downto 24) <= wb_data_w(31 downto 24);
                 
                 when others =>
-                    error <= '1';
+                    
             end case;
             
             wb_data_r <= mem(to_integer(unsigned(address)));
