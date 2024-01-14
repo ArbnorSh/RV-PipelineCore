@@ -50,10 +50,12 @@ architecture Behavioral of processor is
     signal d_sel: std_logic_vector(3 downto 0);
     signal d_we, d_valid, d_ack : std_logic;
     
-    constant WB_IDLE : std_logic := '0';
-    constant WB_ACTIVE : std_logic := '1';
-    signal instr_port_state : std_logic;
-    signal d_port_state : std_logic;
+    type wb_state is (WB_IDLE, WB_ACTIVE);
+    
+--    constant WB_IDLE : std_logic := '0';
+--    constant WB_ACTIVE : std_logic := '1';
+    signal instr_port_state : wb_state := WB_IDLE;
+    signal d_port_state : wb_state := WB_IDLE;
     
 begin
 
@@ -78,8 +80,6 @@ begin
     -- Instruction Port Wishbone
     instr_ack <= instr_wb_ack;
     instr_data <= instr_wb_data;
-    
-    instr_port_state <= WB_IDLE;
     
     process(wb_clk)
     begin
@@ -126,8 +126,6 @@ begin
     -- DATA Port Wishbone
     d_ack <= d_wb_ack;
     d_data_r <= d_wb_data_r;
-    
-    d_port_state <= WB_IDLE;
     
     process(wb_clk)
     begin

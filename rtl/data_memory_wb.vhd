@@ -23,6 +23,8 @@ architecture Behavioral of data_memory_wb is
     
     signal address: std_logic_vector(29 downto 0);
     signal write_enable : std_logic_vector(3 downto 0);
+    
+    signal error : std_logic;
 begin
 
     write_enable <= ( 3 downto 0 => wb_we and wb_stb) and wb_sel;
@@ -47,20 +49,22 @@ begin
     process(wb_clk) begin
         
         if rising_edge(wb_clk) then
-        
-            case write_enable is
-                when "0001" => 
-                    mem(to_integer(unsigned(address)))(7 downto 0) <= wb_data_w(7 downto 0);
-                when "0011" => 
-                    mem(to_integer(unsigned(address)))(15 downto 8) <= wb_data_w(15 downto 8);
-                when "0111" => 
-                    mem(to_integer(unsigned(address)))(23 downto 16) <= wb_data_w(23 downto 16);
-                when "1111" =>
-                    mem(to_integer(unsigned(address)))(31 downto 24) <= wb_data_w(31 downto 24);
-                
-                when others =>
-                    
-            end case;
+            
+            if write_enable(0) then
+                mem(to_integer(unsigned(address)))(7 downto 0) <= wb_data_w(7 downto 0);
+            end if;
+            
+            if write_enable(1) then
+                mem(to_integer(unsigned(address)))(15 downto 8) <= wb_data_w(15 downto 8);
+            end if;
+            
+            if write_enable(2) then
+                mem(to_integer(unsigned(address)))(23 downto 16) <= wb_data_w(23 downto 16);
+            end if;
+            
+            if write_enable(3) then
+                mem(to_integer(unsigned(address)))(31 downto 24) <= wb_data_w(31 downto 24);
+            end if;
             
             wb_data_r <= mem(to_integer(unsigned(address)));
         

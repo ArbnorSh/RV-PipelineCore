@@ -108,10 +108,10 @@ begin
         
     process begin
         clk <= '1';
-        wait for 5 ns;
+        wait for 10 ns;
         
         clk <= '0';
-        wait for 5 ns;
+        wait for 10 ns;
     end process;
     
     process begin
@@ -124,52 +124,52 @@ begin
     
     process(clk) begin
         
---        if falling_edge(clk) and d_wb_we = '1' then
---            if to_integer(d_wb_addr) = 116 and d_wb_data_w = 5 then
---                report "Simulated program successfuly" severity failure;
---            end if;
---        end if;
-        
-         if falling_edge(clk) and d_wb_we = '1' then
-            case to_integer(d_wb_addr) is
-                when 80 =>
-                    -- r
-                    if to_integer(d_wb_data_w) = 16#72# then
-                        risc_string <= risc_string + 1;
-                    end if;
-                when 81 =>
-                    -- i
-                    if to_integer(d_wb_data_w) = 16#69# then
-                        risc_string <= risc_string + 1;
-                    end if;
-                when 82 =>
-                    -- s
-                    if to_integer(d_wb_data_w) = 16#73# then
-                        risc_string <= risc_string + 1;
-                    end if;
-                when 83 =>
-                    -- c
-                    if to_integer(d_wb_data_w) = 16#63# then
-                        risc_string <= risc_string + 1;
-                    end if;
-               when 84 =>
-                    -- v
-                    if to_integer(d_wb_data_w) = 16#76# then
-                        risc_string <= risc_string + 1;
-                    end if;
-               when 85 =>
-                    -- '\0'
-                    if to_integer(d_wb_data_w) = 0 then
-                        risc_string <= risc_string + 1;
-                    end if;
-               when others =>
-
-            end case;
-        end if;
-
-        if risc_string = 6 then
+        if falling_edge(clk) and d_wb_we = '1' then
+            if d_wb_addr = 100 and d_wb_data_w = 25 then
                 report "Simulated program successfuly" severity failure;
-        end if;    
+            end if;
+        end if;
+        
+--         if falling_edge(clk) and d_wb_we = '1' then
+--            case to_integer(d_wb_addr) is
+--                when 80 =>
+--                    -- r
+--                    if to_integer(d_wb_data_w) = 16#72# then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--                when 81 =>
+--                    -- i
+--                    if to_integer(d_wb_data_w) = 16#69# then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--                when 82 =>
+--                    -- s
+--                    if to_integer(d_wb_data_w) = 16#73# then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--                when 83 =>
+--                    -- c
+--                    if to_integer(d_wb_data_w) = 16#63# then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--               when 84 =>
+--                    -- v
+--                    if to_integer(d_wb_data_w) = 16#76# then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--               when 85 =>
+--                    -- '\0'
+--                    if to_integer(d_wb_data_w) = 0 then
+--                        risc_string <= risc_string + 1;
+--                    end if;
+--               when others =>
+
+--            end case;
+--        end if;
+
+--        if risc_string = 6 then
+--                report "Simulated program successfuly" severity failure;
+--        end if;    
         
     end process;
 
