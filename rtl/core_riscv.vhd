@@ -30,6 +30,7 @@ architecture Behavioral of core_riscv is
                funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
                funct7_b5_d : in STD_LOGIC;
                imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
+               csr_write_d : out STD_LOGIC;
                stall_e : in STD_LOGIC;
                flush_e : in STD_LOGIC;
                zero_e : in STD_LOGIC;
@@ -66,6 +67,7 @@ architecture Behavioral of core_riscv is
                stall_d : in STD_LOGIC;
                flush_d : in STD_LOGIC;
                imm_src_d : in STD_LOGIC_VECTOR (2 downto 0);
+               csr_write_d : in STD_LOGIC;
                stall_e : in STD_LOGIC;
                flush_e : in STD_LOGIC;
                forward_a_e : in STD_LOGIC_VECTOR (1 downto 0);
@@ -117,6 +119,8 @@ architecture Behavioral of core_riscv is
     signal read_data_m, write_data_m : std_logic_vector(31 downto 0);
     signal mem_write_m, load_store_m : std_logic;
     signal mem_control_m : std_logic_vector(3 downto 0);
+    
+    signal csr_write_d : std_logic;
 
 begin
 
@@ -181,6 +185,7 @@ begin
         imm_src_d => imm_src_d,
         rs1_d => rs1_d,
         rs2_d => rs2_d,
+        csr_write_d => csr_write_d,
         
         forward_a_e => forward_a_e,
         forward_b_e => forward_b_e,

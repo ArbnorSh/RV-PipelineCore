@@ -26,6 +26,8 @@ begin
                 ext_imm <= ( 31 downto 20 => instr(31), 19 downto 12 => instr(19 downto 12), 11 => instr(20), 10 downto 1 => instr(30 downto 21), 0 => '0' );
             when "100" =>
                 ext_imm <= ( 31 downto 12 => instr(31 downto 12), 11 downto 0 => '0' );
+            when "101" =>
+                ext_imm <= ( 31 downto 5 => '0', 4 downto 0 => instr(19 downto 15) ) ;
             when others =>
                 ext_imm <= (others => '0');
         end case;

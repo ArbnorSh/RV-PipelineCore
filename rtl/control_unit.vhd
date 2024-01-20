@@ -8,6 +8,7 @@ entity control_unit is
            funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
            funct7_b5_d : in STD_LOGIC;
            imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
+           csr_write_d : out STD_LOGIC;
            stall_e : in STD_LOGIC;
            flush_e : in STD_LOGIC;
            zero_e : in STD_LOGIC;
@@ -46,6 +47,7 @@ architecture Behavioral of control_unit is
                alu_op : out STD_LOGIC_VECTOR (1 downto 0);
                mask_op : out STD_LOGIC;
                pc_target_src: out STD_LOGIC;
+               csr_write : out STD_LOGIC;
                load_store : out STD_LOGIC);
     end component;
     
@@ -151,7 +153,9 @@ begin
         alu_op => alu_op_d,
         mask_op => mask_op_d,
         pc_target_src => pc_target_src_d,
-        load_store => load_store_d
+        load_store => load_store_d,
+        
+        csr_write => csr_write_d
         );
         
     mask_dec: mask_decoder port map(
