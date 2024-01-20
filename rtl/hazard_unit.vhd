@@ -2,15 +2,20 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity hazard_unit is
-    Port ( rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
+    Port ( clk, reset : in STD_LOGIC;
+           rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
            pc_src_e, result_src_b0_e : in STD_LOGIC;
+           load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
+           instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
-           stall_f, stall_d, flush_d, flush_e : out STD_LOGIC);
+           stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
 end hazard_unit;
 
 architecture Behavioral of hazard_unit is
-    signal lw_stall_d: std_logic;
+    signal lw_stall_d, f_and_d_state, d_and_e_state: std_logic;
+    signal ignore_instr_mem_handshake : std_logic := '0';
+    signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
 begin
 
     process(all)
@@ -52,10 +57,57 @@ begin
         
     end process;
     
-    stall_d <= lw_stall_d;
-    stall_f <= lw_stall_d;
-    flush_d <= pc_src_e;
+    process(clk)
+    begin
+        
+        if rising_edge(clk) then
+        
+            if reset then
+                ignore_instr_mem_handshake <= '0';
+            else
+                case ignore_instr_mem_handshake is
+                    when '0' => 
+                        if pc_src_e then
+                            ignore_instr_mem_handshake <= '1';
+                        end if;
+    
+                    when '1' =>  
+                        if raw_instr_mem_handshake then
+                            ignore_instr_mem_handshake <= '0';
+                        end if;
+                    when others =>
+                        ignore_instr_mem_handshake <= '0';
+                end case;
+            end if;
+        
+        end if;
+        
+    end process;
+    
+    raw_instr_mem_handshake <= instruction_ack and instruction_valid;    
+    instr_mem_handshake <= raw_instr_mem_handshake and (not ignore_instr_mem_handshake);
+    waiting_on_instruction <= (not instr_mem_handshake) and instruction_valid;
+    
+    stall_f <= lw_stall_d or waiting_on_instruction or stall_d;
+    stall_d <= lw_stall_d or stall_e;
+    stall_e <= stall_m;
+    stall_m <= load_store_m and (not data_ack);
+    
+    flush_d <= pc_src_e or (waiting_on_instruction and not stall_d);
     flush_e <= lw_stall_d or pc_src_e;
+    flush_w <= stall_m;
+    
+--    stall_f <= lw_stall_d or waiting_on_instruction;
+--    stall_d <= lw_stall_d or stall_e;
+--    stall_e <= stall_m;
+--    stall_m <= load_store_m and (not data_ack);
+    
+--    f_and_d_state <= '0' when stall_d = '1' else stall_f when not lw_stall_d else '0';
+--    flush_d <= pc_src_e or f_and_d_state;
+    
+--    d_and_e_state <= '0' when stall_e = '1' else stall_d;
+--    flush_e <= d_and_e_state or pc_src_e;
+--    flush_w <= stall_m;
 
 
 end Behavioral;

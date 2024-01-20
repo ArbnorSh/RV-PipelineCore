@@ -13,6 +13,7 @@ entity datapath is
            stall_d : in STD_LOGIC;
            flush_d : in STD_LOGIC;
            imm_src_d : in STD_LOGIC_VECTOR (2 downto 0);
+           stall_e : in STD_LOGIC;
            flush_e : in STD_LOGIC;
            forward_a_e : in STD_LOGIC_VECTOR (1 downto 0);
            forward_b_e : in STD_LOGIC_VECTOR (1 downto 0);
@@ -25,11 +26,13 @@ entity datapath is
            negative_e : out STD_LOGIC;
            overflow_e : out STD_LOGIC;
            carry_e : out STD_LOGIC;
+           stall_m : in STD_LOGIC;
            mem_write_m : in STD_LOGIC;
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
            mask_src_m : in STD_LOGIC_VECTOR (2 downto 0);
+           flush_w : in STD_LOGIC;
            reg_write_w : in STD_LOGIC;
            result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
            rs1_d, rs2_d, rs1_e, rs2_e : out STD_LOGIC_VECTOR (4 downto 0);
@@ -139,6 +142,14 @@ architecture Behavioral of datapath is
                y : out STD_LOGIC_VECTOR (width - 1 downto 0));
     end component;
     
+   component memory_store is
+        Port ( write_data : in STD_LOGIC_VECTOR (31 downto 0);
+               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               addr : in STD_LOGIC_VECTOR(1 downto 0);
+               mem_write : in STD_LOGIC;
+               write_data_output : out STD_LOGIC_VECTOR (31 downto 0));
+    end component;
+    
     signal pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
     signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
@@ -146,8 +157,11 @@ architecture Behavioral of datapath is
     signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w: std_logic_vector(31 downto 0);
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
     signal output_from_d_reg: std_logic_vector(95 downto 0);
-    signal output_from_e_reg: std_logic_vector(174 downto 0);
-    signal output_from_m_reg, output_from_w_reg: std_logic_vector(132 downto 0);
+    signal output_from_e_reg: std_logic_vector(177 downto 0);
+    signal output_from_m_reg: std_logic_vector(135 downto 0);
+    signal output_from_w_reg: std_logic_vector(132 downto 0);
+    signal funct3_e, funct3_m : std_logic_vector(2 downto 0);
+    signal pre_write_data_m : std_logic_vector(31 downto 0);
     
 begin
 
@@ -160,7 +174,7 @@ begin
     pc_register: flopenr generic map(32) port map(
         clk => clk,
         reset => reset,
-        enable => (not stall_f),
+        enable => (not stall_f) or pc_src_e,
         d => pc_next_f,
         q => pc_f
         );
@@ -206,15 +220,18 @@ begin
         ext_imm => imm_ext_d
         );
     
-    register_execute: floprc generic map(175) port map(
+    register_execute: flopenrc generic map(178) port map(
         clk => clk,
         reset => reset,
         clear => flush_e,
-        d => (rd1_d & rd2_d & pc_d & rs1_d & rs2_d & rd_d & imm_ext_d & pc_plus4_d),
+        enable => (not stall_e),
+        d => (rd1_d & rd2_d & pc_d & rs1_d & rs2_d & rd_d & imm_ext_d & pc_plus4_d
+              & funct3_d),
         q => output_from_e_reg
         );
     
-    (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e) <= output_from_e_reg;
+    (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e,
+     funct3_e) <= output_from_e_reg;
     
     pc_target_src_select: mux2 generic map(32) port map(
         a => rd1_e,
@@ -270,14 +287,23 @@ begin
         y => pc_target_e
         );
         
-    register_memory: flopr generic map(133) port map(
+    register_memory: flopenr generic map(136) port map(
         clk => clk,
         reset => reset,
-        d => (alu_result_e & write_data_e & rd_e & pc_plus4_e & pc_target_e),
+        enable => (not stall_m),
+        d => (alu_result_e & write_data_e & rd_e & pc_plus4_e & pc_target_e & funct3_e),
         q => output_from_m_reg
         );
         
-    (alu_result_m, write_data_m, rd_m, pc_plus4_m, pc_target_m) <= output_from_m_reg;
+    (alu_result_m, pre_write_data_m, rd_m, pc_plus4_m, pc_target_m, funct3_m) <= output_from_m_reg;
+    
+    mem_s: memory_store port map(
+        write_data => pre_write_data_m,
+        funct3 => funct3_m,
+        addr => alu_result_m(1 downto 0),
+        mem_write => mem_write_m,
+        write_data_output => write_data_m
+        );
     
     mask_block: mask_extend port map(
         in_data => read_data_m, 
@@ -285,9 +311,10 @@ begin
         out_data => read_data_ext_m
         );
     
-    register_writeback: flopr generic map(133) port map(
+    register_writeback: floprc generic map(133) port map(
         clk => clk,
         reset => reset,
+        clear => flush_w,
         d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m & pc_target_m),
         q => output_from_w_reg
         );

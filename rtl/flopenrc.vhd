@@ -20,10 +20,10 @@ begin
     
         if reset = '1' then
             q <= (others => '0');
-        elsif rising_edge(clk) and enable = '1' then
+        elsif rising_edge(clk) then
             if clear = '1' then
                 q <= (others => '0');
-            else
+            elsif enable = '1' then
                 q <= d;
             end if;
         end if;
