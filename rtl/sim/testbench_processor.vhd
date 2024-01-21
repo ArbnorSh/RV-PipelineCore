@@ -51,6 +51,7 @@ architecture Behavioral of testbench_processor is
     end component;
     
     signal risc_string: integer := 0;
+    signal risc_csr: integer := 0;
     
     signal clk, reset: std_logic;
     
@@ -129,6 +130,28 @@ begin
                 report "Simulated program successfuly" severity failure;
             end if;
         end if;
+        
+        if falling_edge(clk) and d_wb_we = '1' then
+            if d_wb_addr = x"80" and d_wb_data_w = 32 then
+                risc_csr <= risc_csr + 1;
+            end if;
+        end if;
+        
+        if falling_edge(clk) and d_wb_we = '1' then
+            if d_wb_addr =  x"84" and d_wb_data_w = 256 then
+                risc_csr <= risc_csr + 1;
+            end if;
+        end if;
+        
+         if falling_edge(clk) and d_wb_we = '1' then
+            if d_wb_addr = x"88" and d_wb_data_w = 3 then
+                risc_csr <= risc_csr + 1;
+            end if;
+        end if;
+        
+        if risc_csr = 3 then
+                report "Simulated program successfuly" severity failure;
+        end if;  
         
 --         if falling_edge(clk) and d_wb_we = '1' then
 --            case to_integer(d_wb_addr) is

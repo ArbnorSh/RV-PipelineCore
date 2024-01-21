@@ -136,6 +136,7 @@ begin
         funct7_b5_d => funct_7_b5_d,
         
         imm_src_d => imm_src_d,
+        csr_write_d => csr_write_d,
         
         stall_e => stall_e,
         flush_e   => flush_e,

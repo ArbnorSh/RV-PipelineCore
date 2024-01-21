@@ -320,7 +320,7 @@ begin
         );
     
     csr_unit: csr_exec generic map(
-        VENDOR_ID => 8X"32"
+        VENDOR_ID => 32D"32"
     )
     port map(
         clk => clk,
