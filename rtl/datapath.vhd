@@ -28,11 +28,13 @@ entity datapath is
            overflow_e : out STD_LOGIC;
            carry_e : out STD_LOGIC;
            load_instr_e : in STD_LOGIC;
+           csr_instr_e : out STD_LOGIC;
            stall_m : in STD_LOGIC;
            mem_write_m : in STD_LOGIC;
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
+           csr_instr_w : out STD_LOGIC;
            flush_w : in STD_LOGIC;
            reg_write_w : in STD_LOGIC;
            result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
@@ -260,6 +262,8 @@ begin
     
     (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e,
      funct3_e, csr_address_e, csr_write_e) <= output_from_e_reg;
+     
+     csr_instr_e <= csr_write_e;
     
     pc_target_src_select: mux2 generic map(32) port map(
         a => rd1_e,
@@ -315,7 +319,10 @@ begin
         y => pc_target_e
         );
     
-    csr_unit: csr_exec port map(
+    csr_unit: csr_exec generic map(
+        VENDOR_ID => 8X"32"
+    )
+    port map(
         clk => clk,
         reset => reset,
         csr_address_read => csr_address_e,
@@ -374,6 +381,8 @@ begin
         
     (alu_result_w, read_data_w, rd_w, pc_plus4_w, pc_target_w, 
      csr_address_w, csr_write_w, out_write_csr_w) <= output_from_w_reg;
+     
+     csr_instr_w <= csr_write_w;
     
     result_mux: mux4 generic map(32) port map(
         a => alu_result_w,

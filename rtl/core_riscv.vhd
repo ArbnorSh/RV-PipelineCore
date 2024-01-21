@@ -82,11 +82,13 @@ architecture Behavioral of core_riscv is
                overflow_e : out STD_LOGIC;
                carry_e : out STD_LOGIC;
                load_instr_e : in STD_LOGIC;
+               csr_instr_e : out STD_LOGIC;
                stall_m : in STD_LOGIC;
                mem_write_m : in STD_LOGIC;
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
                read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
+               csr_instr_w : out STD_LOGIC;
                flush_w : in STD_LOGIC;
                reg_write_w : in STD_LOGIC;
                result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
@@ -98,6 +100,7 @@ architecture Behavioral of core_riscv is
         Port ( clk, reset : in STD_LOGIC;
                rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
                pc_src_e, load_instr_e : in STD_LOGIC;
+               csr_instr_e, csr_instr_w : in STD_LOGIC;
                load_store_m : in STD_LOGIC;
                reg_write_m, reg_write_w : in STD_LOGIC;
                instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
@@ -120,7 +123,7 @@ architecture Behavioral of core_riscv is
     signal mem_write_m, load_store_m : std_logic;
     signal mem_control_m : std_logic_vector(3 downto 0);
     
-    signal csr_write_d : std_logic;
+    signal csr_write_d, csr_instr_e, csr_instr_w : std_logic;
 
 begin
 
@@ -241,7 +244,10 @@ begin
         stall_m => stall_m,
         flush_d => flush_d,
         flush_e => flush_e,
-        flush_w => flush_w
+        flush_w => flush_w,
+        
+        csr_instr_e => csr_instr_e,
+        csr_instr_w => csr_instr_w
         );
      
      is_instruction_valid <= (not reset);

@@ -5,6 +5,7 @@ entity hazard_unit is
     Port ( clk, reset : in STD_LOGIC;
            rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
            pc_src_e, load_instr_e : in STD_LOGIC;
+           csr_instr_e, csr_instr_w : in STD_LOGIC;
            load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
@@ -16,6 +17,7 @@ architecture Behavioral of hazard_unit is
     signal lw_stall_d, f_and_d_state, d_and_e_state: std_logic;
     signal ignore_instr_mem_handshake : std_logic := '0';
     signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
+    signal csr_pending : std_logic;
 begin
 
     process(all)
@@ -84,30 +86,37 @@ begin
         
     end process;
     
+    -- Pending CSR instruction
+    -- Stall the pipeline until CSR
+    -- instruction is retired
+    process(clk)
+    begin
+        
+        if rising_edge(clk) then
+        
+            if reset then
+                csr_pending <= '0';
+            elsif csr_instr_e = '1' then
+                csr_pending <= '1';
+            elsif csr_instr_w = '1' then
+                csr_pending <= '0';
+            end if;
+        
+        end if;
+        
+    end process;
+    
     raw_instr_mem_handshake <= instruction_ack and instruction_valid;    
     instr_mem_handshake <= raw_instr_mem_handshake and (not ignore_instr_mem_handshake);
     waiting_on_instruction <= (not instr_mem_handshake) and instruction_valid;
     
-    stall_f <= lw_stall_d or waiting_on_instruction or stall_d;
-    stall_d <= lw_stall_d or stall_e;
+    stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending;
+    stall_d <= lw_stall_d or stall_e or csr_pending;
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
     flush_d <= pc_src_e or (waiting_on_instruction and not stall_d);
-    flush_e <= lw_stall_d or pc_src_e;
+    flush_e <= lw_stall_d or pc_src_e or csr_pending;
     flush_w <= stall_m;
-    
---    stall_f <= lw_stall_d or waiting_on_instruction;
---    stall_d <= lw_stall_d or stall_e;
---    stall_e <= stall_m;
---    stall_m <= load_store_m and (not data_ack);
-    
---    f_and_d_state <= '0' when stall_d = '1' else stall_f when not lw_stall_d else '0';
---    flush_d <= pc_src_e or f_and_d_state;
-    
---    d_and_e_state <= '0' when stall_e = '1' else stall_d;
---    flush_e <= d_and_e_state or pc_src_e;
---    flush_w <= stall_m;
-
 
 end Behavioral;
