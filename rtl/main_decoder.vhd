@@ -12,7 +12,7 @@ entity main_decoder is
            imm_src : out STD_LOGIC_VECTOR (2 downto 0);
            reg_write : out STD_LOGIC;
            alu_op : out STD_LOGIC_VECTOR (1 downto 0);
-           mask_op : out STD_LOGIC;
+           load_instr : out STD_LOGIC;
            pc_target_src: out STD_LOGIC;
            load_store : out STD_LOGIC;
            csr_write : out STD_LOGIC);
@@ -22,7 +22,7 @@ architecture Behavioral of main_decoder is
     
     
     -- out_control = reg_write, imm_src, alu_src_a, alu_src_b, mem_write, 
-    -- result_src, branch, alu_op, jump, mask_op, pc_target_src, load_store
+    -- result_src, branch, alu_op, jump, load_instr, pc_target_src, load_store
     -- csr_write
     signal out_control: std_logic_vector(16 downto 0);
 begin
@@ -69,7 +69,7 @@ begin
     
     (reg_write, imm_src(2), imm_src(1), imm_src(0), alu_src_a, alu_src_b, 
      mem_write, result_src(1), result_src(0), branch, alu_op(1), 
-     alu_op(0), jump, mask_op, pc_target_src, load_store, csr_write) <= out_control;
+     alu_op(0), jump, load_instr, pc_target_src, load_store, csr_write) <= out_control;
 
 
 end Behavioral;

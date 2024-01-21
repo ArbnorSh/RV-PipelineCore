@@ -27,12 +27,12 @@ entity datapath is
            negative_e : out STD_LOGIC;
            overflow_e : out STD_LOGIC;
            carry_e : out STD_LOGIC;
+           load_instr_e : in STD_LOGIC;
            stall_m : in STD_LOGIC;
            mem_write_m : in STD_LOGIC;
            write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
            alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
            read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
-           mask_src_m : in STD_LOGIC_VECTOR (2 downto 0);
            flush_w : in STD_LOGIC;
            reg_write_w : in STD_LOGIC;
            result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
@@ -177,17 +177,18 @@ architecture Behavioral of datapath is
     signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w: std_logic_vector(31 downto 0);
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
     signal output_from_d_reg: std_logic_vector(95 downto 0);
-    signal output_from_e_reg: std_logic_vector(210 downto 0);
-    signal output_from_m_reg: std_logic_vector(200 downto 0);
-    signal output_from_w_reg: std_logic_vector(197 downto 0);
+    signal output_from_e_reg: std_logic_vector(190 downto 0);
+    signal output_from_m_reg: std_logic_vector(180 downto 0);
+    signal output_from_w_reg: std_logic_vector(177 downto 0);
     signal funct3_e, funct3_m : std_logic_vector(2 downto 0);
     signal pre_write_data_m : std_logic_vector(31 downto 0);
     signal data_output_from_execute : std_logic_vector(31 downto 0);
     
     -- csr
-    signal csr_address_e, out_write_csr_e, out_write_reg_e: std_logic_vector(31 downto 0);
+    signal csr_address_e, csr_address_m, csr_address_w : std_logic_vector(11 downto 0);
+    signal out_write_csr_e, out_write_reg_e: std_logic_vector(31 downto 0);
     signal csr_write_e, csr_write_m, csr_write_w: std_logic;
-    signal csr_address_m, out_write_csr_m, out_write_csr_w, csr_address_w : std_logic_vector(31 downto 0);
+    signal out_write_csr_m, out_write_csr_w : std_logic_vector(31 downto 0);
 
 begin
 
@@ -246,7 +247,7 @@ begin
         ext_imm => imm_ext_d
         );
     
-    register_execute: flopenrc generic map(211) port map(
+    register_execute: flopenrc generic map(191) port map(
         clk => clk,
         reset => reset,
         clear => flush_e,
@@ -334,7 +335,7 @@ begin
         y => data_output_from_execute
         );
         
-    register_memory: flopenr generic map(201) port map(
+    register_memory: flopenr generic map(181) port map(
         clk => clk,
         reset => reset,
         enable => (not stall_m),
@@ -356,11 +357,11 @@ begin
     
     mask_block: mask_extend port map(
         in_data => read_data_m, 
-        control => mask_src_m,
+        control => funct3_m,
         out_data => read_data_ext_m
         );
     
-    register_writeback: floprc generic map(198) port map(
+    register_writeback: floprc generic map(178) port map(
         clk => clk,
         reset => reset,
         clear => flush_w,

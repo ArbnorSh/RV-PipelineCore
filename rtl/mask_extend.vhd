@@ -16,16 +16,16 @@ begin
     
         case control is
             -- lb
-            when "001" =>
+            when "000" =>
                 out_data <= ( 31 downto 8 => in_data(7), 7 downto 0 => in_data(7 downto 0));
             -- lh
-            when "010" =>
+            when "001" =>
                 out_data <= ( 31 downto 16 => in_data(15), 15 downto 0 => in_data(15 downto 0));
             -- lbu
-            when "011" =>
+            when "100" =>
                 out_data <= ( 31 downto 8 => '0', 7 downto 0 => in_data(7 downto 0));
             -- lhu
-            when "100" =>
+            when "101" =>
                 out_data <= ( 31 downto 16 => '0', 15 downto 0 => in_data(15 downto 0));
             when others =>
                 out_data <= in_data;

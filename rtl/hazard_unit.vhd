@@ -4,7 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity hazard_unit is
     Port ( clk, reset : in STD_LOGIC;
            rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
-           pc_src_e, result_src_b0_e : in STD_LOGIC;
+           pc_src_e, load_instr_e : in STD_LOGIC;
            load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
@@ -45,7 +45,7 @@ begin
             forward_b_e <= "00";
         end if;
         
-        if result_src_b0_e = '1' then
+        if load_instr_e = '1' then
             if rd_e = rs1_d or rd_e = rs2_d then
                 lw_stall_d <= '1';
             else

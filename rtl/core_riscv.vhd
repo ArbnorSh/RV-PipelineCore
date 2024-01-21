@@ -44,10 +44,10 @@ architecture Behavioral of core_riscv is
                alu_src_b_e : out STD_LOGIC;
                result_src_b0_e : out STD_LOGIC;
                pc_target_src_e : out STD_LOGIC;
+               load_instr_e : out STD_LOGIC;
                stall_m : in STD_LOGIC;
                mem_write_m : out STD_LOGIC;
                reg_write_m : out STD_LOGIC;
-               mask_src_m : out STD_LOGIC_VECTOR (2 downto 0);
                mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
                load_store_m : out STD_LOGIC;
                flush_w : in STD_LOGIC;
@@ -81,12 +81,12 @@ architecture Behavioral of core_riscv is
                negative_e : out STD_LOGIC;
                overflow_e : out STD_LOGIC;
                carry_e : out STD_LOGIC;
+               load_instr_e : in STD_LOGIC;
                stall_m : in STD_LOGIC;
                mem_write_m : in STD_LOGIC;
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
                read_data_m : in STD_LOGIC_VECTOR (31 downto 0);
-               mask_src_m : in STD_LOGIC_VECTOR (2 downto 0);
                flush_w : in STD_LOGIC;
                reg_write_w : in STD_LOGIC;
                result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
@@ -97,7 +97,7 @@ architecture Behavioral of core_riscv is
     component hazard_unit is
         Port ( clk, reset : in STD_LOGIC;
                rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w : in STD_LOGIC_VECTOR (4 downto 0);
-               pc_src_e, result_src_b0_e : in STD_LOGIC;
+               pc_src_e, load_instr_e : in STD_LOGIC;
                load_store_m : in STD_LOGIC;
                reg_write_m, reg_write_w : in STD_LOGIC;
                instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
@@ -106,7 +106,7 @@ architecture Behavioral of core_riscv is
     end component;
     
     signal op_d : std_logic_vector(6 downto 0);
-    signal funct3_d, imm_src_d, mask_src_m: std_logic_vector(2 downto 0);
+    signal funct3_d, imm_src_d: std_logic_vector(2 downto 0);
     signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
     signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w, pc_target_src_e: std_logic;
@@ -114,7 +114,7 @@ architecture Behavioral of core_riscv is
     signal rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w: std_logic_vector(4 downto 0);
     signal alu_control_e: std_logic_vector(3 downto 0);
     
-    signal is_instruction_valid : std_logic;
+    signal is_instruction_valid, load_instr_e : std_logic;
     signal pc_f, instruction_f, alu_result_m : std_logic_vector(31 downto 0);
     signal read_data_m, write_data_m : std_logic_vector(31 downto 0);
     signal mem_write_m, load_store_m : std_logic;
@@ -155,7 +155,7 @@ begin
         
         mem_write_m => mem_write_m,
         reg_write_m => reg_write_m,
-        mask_src_m => mask_src_m,
+        load_instr_e => load_instr_e,
         mem_control_m => mem_control_m,
         load_store_m => load_store_m,
         
@@ -209,7 +209,7 @@ begin
         alu_result_m => alu_result_m,
         read_data_m => read_data_m,
         rd_m => rd_m,
-        mask_src_m => mask_src_m,
+        load_instr_e => load_instr_e,
         
         reg_write_w => reg_write_w,
         result_src_w => result_src_w,
@@ -226,7 +226,7 @@ begin
         rd_m => rd_m,
         rd_w => rd_w,
         pc_src_e => pc_src_e,
-        result_src_b0_e => result_src_b0_e,
+        load_instr_e => load_instr_e,
         load_store_m => load_store_m,
         reg_write_m => reg_write_m,
         reg_write_w => reg_write_w,
