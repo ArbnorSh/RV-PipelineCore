@@ -125,7 +125,7 @@ begin
     process(clk) begin
         
         if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = 100 and d_wb_data_w = 25 then
+            if d_wb_addr = 116 and d_wb_data_w = 5 then
                 report "Simulated program successfuly" severity failure;
             end if;
         end if;

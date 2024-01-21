@@ -129,6 +129,7 @@ architecture Behavioral of datapath is
     
     component mask_extend is
         Port ( in_data : in STD_LOGIC_VECTOR (31 downto 0);
+               address : in STD_LOGIC_VECTOR (1 downto 0);
                control : in STD_LOGIC_VECTOR (2 downto 0);
                out_data : out STD_LOGIC_VECTOR (31 downto 0));
     end component;
@@ -356,7 +357,8 @@ begin
         );
     
     mask_block: mask_extend port map(
-        in_data => read_data_m, 
+        in_data => read_data_m,
+        address => alu_result_m(1 downto 0),
         control => funct3_m,
         out_data => read_data_ext_m
         );
