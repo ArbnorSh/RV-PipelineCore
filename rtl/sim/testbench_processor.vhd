@@ -149,7 +149,13 @@ begin
             end if;
         end if;
         
-        if risc_csr = 3 then
+         if falling_edge(clk) and d_wb_we = '1' then
+            if d_wb_addr = X"8C" and d_wb_data_w = X"84" then
+                risc_csr <= risc_csr + 1;
+            end if;
+        end if;
+                
+        if risc_csr = 4 then
                 report "Simulated program successfuly" severity failure;
         end if;  
         
