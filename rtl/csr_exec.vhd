@@ -19,8 +19,13 @@ entity csr_exec is
            rd1 : in STD_LOGIC_VECTOR (31 downto 0);
            imm_ext : in STD_LOGIC_VECTOR (31 downto 0);
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+           instr_addr_misaligned : in std_logic;
+           instr_except_pc : std_logic_vector(31 downto 0);
            out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
-           out_write_csr : out STD_LOGIC_VECTOR (31 downto 0));
+           out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
+           out_mepc : out STD_LOGIC_VECTOR(31 downto 0);
+           trap_jump_addr : out STD_LOGIC_VECTOR (31 downto 0);
+           trap_caught : out std_logic := '0');
 end csr_exec;
 
 architecture Behavioral of csr_exec is
@@ -60,8 +65,27 @@ architecture Behavioral of csr_exec is
     constant CSR_MCAUSE_ADDR : std_logic_vector(11 downto 0) := X"342";
     constant CSR_MSCRATCH_ADDR : std_logic_vector(11 downto 0) := X"340";
     
-    -- Defines for 
-begin    
+    -- Exceptions
+    signal is_exception : std_logic;
+    signal mtrap_cause : std_logic_vector(3 downto 0);
+begin
+
+    process(all)
+    begin
+    
+        is_exception <= csr_mstatus_mie and instr_addr_misaligned;
+        trap_caught <= is_exception;
+        
+        if is_exception = '1' then
+            if instr_addr_misaligned = '1' then 
+                mtrap_cause <= 4D"00";
+            end if;
+        end if;
+        
+        trap_jump_addr <= ( 31 downto 2 => csr_mtvec_base, 1 downto 0 => "00" );
+            
+    end process;
+    
     -- MCYCLE and MCYCLEH
     process(clk)
     begin
@@ -163,11 +187,15 @@ begin
         if rising_edge(clk) then   
             if reset then
                 csr_mepc_r <= (others => '0');
+            elsif trap_caught = '1' then
+                csr_mepc_r <= instr_except_pc(31 downto 1);
             elsif (csr_address_write = CSR_MEPC_ADDR) and (write_enable = '1') then
                 csr_mepc_r <= write_value(31 downto 1);
             end if;
         end if;
     end process;
+    
+    out_mepc <= csr_mepc;
     
     -- MCAUSE
     -- Handle trap cause
@@ -178,7 +206,9 @@ begin
             if reset then
                 csr_interrupt <= '0';
                 csr_exception_code <= (others => '0');
-            -- else if trap
+            elsif trap_caught = '1' then
+                csr_interrupt <= '0' when is_exception else '1';
+                csr_exception_code <= mtrap_cause;
             end if;
         end if;
     end process;

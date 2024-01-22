@@ -39,7 +39,13 @@ entity datapath is
            reg_write_w : in STD_LOGIC;
            result_src_w : in STD_LOGIC_VECTOR (1 downto 0);
            rs1_d, rs2_d, rs1_e, rs2_e : out STD_LOGIC_VECTOR (4 downto 0);
-           rd_e, rd_m, rd_w : out STD_LOGIC_VECTOR(4 downto 0));
+           rd_e, rd_m, rd_w : out STD_LOGIC_VECTOR(4 downto 0);
+           instr_addr_misaligned_d : out STD_LOGIC;
+           instr_addr_misaligned_w : out STD_LOGIC;
+           is_instr_exception_m : out STD_LOGIC;
+           trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
+           trap_caught_w : out STD_LOGIC;
+           mret_instr_e : in STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -169,45 +175,61 @@ architecture Behavioral of datapath is
                rd1 : in STD_LOGIC_VECTOR (31 downto 0);
                imm_ext : in STD_LOGIC_VECTOR (31 downto 0);
                funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               instr_addr_misaligned : in std_logic;
+               instr_except_pc : std_logic_vector(31 downto 0);
                out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
-               out_write_csr : out STD_LOGIC_VECTOR (31 downto 0));
+               out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
+               out_mepc : out STD_LOGIC_VECTOR(31 downto 0);
+               trap_jump_addr : out STD_LOGIC_VECTOR (31 downto 0);
+               trap_caught : out std_logic);
     end component;
     
-    signal pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
-    signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d: std_logic_vector(31 downto 0);
+    signal pc_next_no_excep, pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
+    signal instr_d, pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d, pc_m, pc_w: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
     signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e, src_a_forward_e: std_logic_vector(31 downto 0);
-    signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w: std_logic_vector(31 downto 0);
+    signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w, jump_pc_target_e: std_logic_vector(31 downto 0);
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
-    signal output_from_d_reg: std_logic_vector(95 downto 0);
-    signal output_from_e_reg: std_logic_vector(190 downto 0);
-    signal output_from_m_reg: std_logic_vector(180 downto 0);
-    signal output_from_w_reg: std_logic_vector(177 downto 0);
+    signal output_from_d_reg: std_logic_vector(97 downto 0);
+    signal output_from_e_reg: std_logic_vector(192 downto 0);
+    signal output_from_m_reg: std_logic_vector(214 downto 0);
+    signal output_from_w_reg: std_logic_vector(211 downto 0);
     signal funct3_e, funct3_m : std_logic_vector(2 downto 0);
     signal pre_write_data_m : std_logic_vector(31 downto 0);
     signal data_output_from_execute : std_logic_vector(31 downto 0);
     
     -- csr
     signal csr_address_e, csr_address_m, csr_address_w : std_logic_vector(11 downto 0);
-    signal out_write_csr_e, out_write_reg_e: std_logic_vector(31 downto 0);
+    signal out_write_csr_e, out_write_reg_e, out_mepc: std_logic_vector(31 downto 0);
     signal csr_write_e, csr_write_m, csr_write_w: std_logic;
     signal out_write_csr_m, out_write_csr_w : std_logic_vector(31 downto 0);
+    
+    -- excpetions
+    signal is_instr_exception_f, is_instr_exception_d: std_logic;
+    signal is_instr_exception_e, instr_addr_misaligned_f, instr_addr_misaligned_e, instr_addr_misaligned_m: std_logic;
+    signal is_instr_exception_w : std_logic;
 
 begin
 
     next_pc: mux2 generic map(32) port map(
         a => pc_plus4_f, 
-        b => pc_target_e,
+        b => jump_pc_target_e,
         s => pc_src_e, 
-        y => pc_next_f);
+        y => pc_next_no_excep
+        );
+    
+    pc_next_f <= trap_jump_addr_w when trap_caught_w = '1' else pc_next_no_excep;
     
     pc_register: flopenr generic map(32) port map(
         clk => clk,
         reset => reset,
-        enable => (not stall_f) or pc_src_e,
+        enable => (not stall_f) or pc_src_e or trap_caught_w,
         d => pc_next_f,
         q => pc_f
         );
+        
+    instr_addr_misaligned_f <= or pc_f(1 downto 0);
+    is_instr_exception_f <= '1' when instr_addr_misaligned_f = '1' else '0';
         
     pc_add_4: adder port map(
         a => pc_f,
@@ -215,16 +237,16 @@ begin
         y => pc_plus4_f
         );
     
-    register_decode: flopenrc generic map(96) port map(
+    register_decode: flopenrc generic map(98) port map(
         clk => clk, 
         reset => reset,
         clear => flush_d,
         enable => (not stall_d),
-        d => (instr_f & pc_f & pc_plus4_f),
+        d => (instr_f & pc_f & pc_plus4_f & instr_addr_misaligned_f & is_instr_exception_f),
         q => output_from_d_reg
         );
     
-    (instr_d, pc_d, pc_plus4_d) <= output_from_d_reg;
+    (instr_d, pc_d, pc_plus4_d, instr_addr_misaligned_d, is_instr_exception_d) <= output_from_d_reg;
     
     op_d <= instr_d(6 downto 0);
     funct3_d <= instr_d(14 downto 12);
@@ -235,7 +257,7 @@ begin
     
     reg_file: register_file port map(
         clk => clk,
-        write_enable => reg_write_w,
+        write_enable => reg_write_w and (not is_instr_exception_w),
         a1 => rs1_d,
         a2 => rs2_d,
         a3 => rd_w,
@@ -250,18 +272,20 @@ begin
         ext_imm => imm_ext_d
         );
     
-    register_execute: flopenrc generic map(191) port map(
+    register_execute: flopenrc generic map(193) port map(
         clk => clk,
         reset => reset,
         clear => flush_e,
         enable => (not stall_e),
         d => (rd1_d & rd2_d & pc_d & rs1_d & rs2_d & rd_d & imm_ext_d & pc_plus4_d
-              & funct3_d & instr_d(31 downto 20) & csr_write_d),
+              & funct3_d & instr_d(31 downto 20) & csr_write_d & instr_addr_misaligned_d
+              & is_instr_exception_d),
         q => output_from_e_reg
         );
     
     (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e,
-     funct3_e, csr_address_e, csr_write_e) <= output_from_e_reg;
+     funct3_e, csr_address_e, csr_write_e, instr_addr_misaligned_e,
+     is_instr_exception_e) <= output_from_e_reg;
      
      csr_instr_e <= csr_write_e;
     
@@ -332,9 +356,17 @@ begin
         rd1 => rd1_e,
         imm_ext => imm_ext_e,
         funct3 => funct3_e,
+        instr_addr_misaligned => instr_addr_misaligned_w,
+        instr_except_pc => pc_w,
+        trap_jump_addr => trap_jump_addr_w,
+        trap_caught => trap_caught_w,
+        
         out_write_reg => out_write_reg_e,
-        out_write_csr => out_write_csr_e
+        out_write_csr => out_write_csr_e,
+        out_mepc => out_mepc
         );
+    
+    jump_pc_target_e <= out_mepc when mret_instr_e = '1' else pc_target_e;
     
     output_from_execute: mux2 generic map(32) port map(
         a => alu_result_e,
@@ -343,17 +375,19 @@ begin
         y => data_output_from_execute
         );
         
-    register_memory: flopenr generic map(181) port map(
+    register_memory: flopenr generic map(215) port map(
         clk => clk,
         reset => reset,
         enable => (not stall_m),
         d => (data_output_from_execute & write_data_e & rd_e & pc_plus4_e & pc_target_e & funct3_e 
-              & csr_address_e & csr_write_e & out_write_csr_e),
+              & csr_address_e & csr_write_e & out_write_csr_e & instr_addr_misaligned_e & is_instr_exception_e
+              & pc_e),
         q => output_from_m_reg
         );
         
     (alu_result_m, pre_write_data_m, rd_m, pc_plus4_m, pc_target_m, funct3_m,
-     csr_address_m, csr_write_m, out_write_csr_m) <= output_from_m_reg;
+     csr_address_m, csr_write_m, out_write_csr_m, instr_addr_misaligned_m,
+     is_instr_exception_m, pc_m) <= output_from_m_reg;
     
     mem_s: memory_store port map(
         write_data => pre_write_data_m,
@@ -370,17 +404,19 @@ begin
         out_data => read_data_ext_m
         );
     
-    register_writeback: floprc generic map(178) port map(
+    register_writeback: floprc generic map(212) port map(
         clk => clk,
         reset => reset,
         clear => flush_w,
         d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m & pc_target_m 
-              & csr_address_m & csr_write_m & out_write_csr_m),
+              & csr_address_m & csr_write_m & out_write_csr_m & is_instr_exception_m
+              & instr_addr_misaligned_m & pc_m),
         q => output_from_w_reg
         );
         
     (alu_result_w, read_data_w, rd_w, pc_plus4_w, pc_target_w, 
-     csr_address_w, csr_write_w, out_write_csr_w) <= output_from_w_reg;
+     csr_address_w, csr_write_w, out_write_csr_w, is_instr_exception_w,
+     instr_addr_misaligned_w, pc_w) <= output_from_w_reg;
      
      csr_instr_w <= csr_write_w;
     

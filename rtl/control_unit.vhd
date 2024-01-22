@@ -30,12 +30,14 @@ entity control_unit is
            load_store_m : out STD_LOGIC;
            flush_w : in STD_LOGIC;
            reg_write_w : out STD_LOGIC;
-           result_src_w : out STD_LOGIC_VECTOR (1 downto 0));
+           result_src_w : out STD_LOGIC_VECTOR (1 downto 0);
+           mret_instr_e : out STD_LOGIC);
 end control_unit;
 
 architecture Behavioral of control_unit is
     component main_decoder is
         Port ( op : in STD_LOGIC_VECTOR (6 downto 0);
+               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
                branch : out STD_LOGIC;
                jump : out STD_LOGIC;
                result_src : out STD_LOGIC_VECTOR (1 downto 0);
@@ -48,7 +50,8 @@ architecture Behavioral of control_unit is
                load_instr : out STD_LOGIC;
                pc_target_src: out STD_LOGIC;
                csr_write : out STD_LOGIC;
-               load_store : out STD_LOGIC);
+               load_store : out STD_LOGIC;
+               mret_instr : out STD_LOGIC);
     end component;
     
     component alu_decoder is
@@ -120,18 +123,20 @@ architecture Behavioral of control_unit is
     signal alu_op_d: std_logic_vector(1 downto 0);
     signal alu_control_d: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(17 downto 0);
+    signal output_from_e_floprc: std_logic_vector(18 downto 0);
     signal output_from_m_flopr: std_logic_vector(7 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
     signal funct3_e, funct3_m: std_logic_vector(2 downto 0);
     signal take_branch_e, load_instr_d, pc_target_src_d: std_logic;
     signal mask_src_d, mask_src_e: std_logic_vector(2 downto 0);
     signal load_store_d, load_store_e : std_logic;
+    signal mret_instr_d : std_logic;
     
 begin
     
     main_dec: main_decoder port map(
         op => opcode_d,
+        funct3 => funct3_d,
         
         branch => branch_d,
         jump => jump_d,
@@ -149,7 +154,8 @@ begin
         pc_target_src => pc_target_src_d,
         load_store => load_store_d,
         
-        csr_write => csr_write_d
+        csr_write => csr_write_d,
+        mret_instr => mret_instr_d
         );
     
     alu_dec: alu_decoder port map(
@@ -159,7 +165,7 @@ begin
         alu_op => alu_op_d,
         alu_control => alu_control_d);
     
-    control_reg_e: flopenrc generic map(18)
+    control_reg_e: flopenrc generic map(19)
         port map(
             clk => clk, 
             reset => reset, 
@@ -167,13 +173,13 @@ begin
             enable => (not stall_e),
             d => (funct3_d & reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
                   alu_control_d & alu_src_a_d & alu_src_b_d & pc_target_src_d & load_store_d &
-                  load_instr_d),
+                  load_instr_d, mret_instr_d),
             q => output_from_e_floprc
         );
     
     (funct3_e, reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
      alu_control_e, alu_src_a_e, alu_src_b_e, pc_target_src_e,
-     load_store_e, load_instr_e) <= output_from_e_floprc;
+     load_store_e, load_instr_e, mret_instr_e) <= output_from_e_floprc;
     
     branch_block: branch_check port map(
         branch => branch_e,

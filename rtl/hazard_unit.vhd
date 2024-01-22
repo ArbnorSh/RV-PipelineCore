@@ -9,6 +9,8 @@ entity hazard_unit is
            load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
+           instr_addr_misaligned_d, instr_addr_misaligned_w, trap_caught : in STD_LOGIC;
+           trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
            stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
 end hazard_unit;
@@ -18,6 +20,7 @@ architecture Behavioral of hazard_unit is
     signal ignore_instr_mem_handshake : std_logic := '0';
     signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
     signal csr_pending : std_logic;
+    signal pending_exception_f : std_logic;
 begin
 
     process(all)
@@ -69,7 +72,7 @@ begin
             else
                 case ignore_instr_mem_handshake is
                     when '0' => 
-                        if pc_src_e then
+                        if pc_src_e or trap_caught then
                             ignore_instr_mem_handshake <= '1';
                         end if;
     
@@ -106,16 +109,33 @@ begin
         
     end process;
     
+    process(clk)
+    begin
+        
+        if rising_edge(clk) then
+        
+            if reset then
+                pending_exception_f <= '0';
+            elsif instr_addr_misaligned_d = '1' then
+                pending_exception_f <= '1';
+            elsif instr_addr_misaligned_w = '1' then
+                pending_exception_f <= '0';
+            end if;
+        
+        end if;
+        
+    end process;
+    
     raw_instr_mem_handshake <= instruction_ack and instruction_valid;    
     instr_mem_handshake <= raw_instr_mem_handshake and (not ignore_instr_mem_handshake);
     waiting_on_instruction <= (not instr_mem_handshake) and instruction_valid;
     
-    stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending;
+    stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending or pending_exception_f;
     stall_d <= lw_stall_d or stall_e or csr_pending;
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
-    flush_d <= pc_src_e or (waiting_on_instruction and not stall_d);
+    flush_d <= pc_src_e or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d);
     flush_e <= lw_stall_d or pc_src_e or csr_pending;
     flush_w <= stall_m;
 
