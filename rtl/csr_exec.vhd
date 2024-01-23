@@ -86,6 +86,18 @@ begin
             
     end process;
     
+    -- MSCRATCH
+    process(clk)
+    begin
+        if rising_edge(clk) then   
+            if reset then
+                csr_mscratch <= (others => '0');
+            elsif (csr_address_write = CSR_MSCRATCH_ADDR) and (write_enable = '1') then
+                csr_mscratch <= write_value;            
+            end if;
+        end if;
+    end process;
+    
     -- MCYCLE and MCYCLEH
     process(clk)
     begin

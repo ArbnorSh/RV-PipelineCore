@@ -63,7 +63,7 @@ begin
             -- csr
             when "1110011" =>
                 -- mret : TODO eret??
-                if funct3 = "111" then
+                if funct3 = "000" then
                     out_control <= b"0_---_-_-_0_00_0_--_1_0_-_0_0_1";
                 else
                     out_control <= b"1_101_-_-_0_00_0_--_0_0_-_0_1_0";

@@ -9,7 +9,8 @@ entity hazard_unit is
            load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
-           instr_addr_misaligned_d, instr_addr_misaligned_w, trap_caught : in STD_LOGIC;
+           instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
+           is_instr_exception_e, trap_caught : in STD_LOGIC;
            trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
            stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
@@ -72,7 +73,7 @@ begin
             else
                 case ignore_instr_mem_handshake is
                     when '0' => 
-                        if pc_src_e or trap_caught then
+                        if (pc_src_e and (not is_instr_exception_e) ) or trap_caught then
                             ignore_instr_mem_handshake <= '1';
                         end if;
     
@@ -135,8 +136,8 @@ begin
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
-    flush_d <= pc_src_e or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d);
-    flush_e <= lw_stall_d or pc_src_e or csr_pending;
+    flush_d <= (pc_src_e and (not is_instr_exception_e) ) or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d);
+    flush_e <= lw_stall_d or (pc_src_e and (not is_instr_exception_e) ) or csr_pending;
     flush_w <= stall_m;
 
 end Behavioral;

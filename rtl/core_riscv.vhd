@@ -98,6 +98,7 @@ architecture Behavioral of core_riscv is
                instr_addr_misaligned_d : out STD_LOGIC;
                instr_addr_misaligned_w : out STD_LOGIC;
                is_instr_exception_m : out STD_LOGIC;
+               is_instr_exception_e : out STD_LOGIC;
                trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
                trap_caught_w : out STD_LOGIC;
                mret_instr_e : in STD_LOGIC);
@@ -111,7 +112,8 @@ architecture Behavioral of core_riscv is
                load_store_m : in STD_LOGIC;
                reg_write_m, reg_write_w : in STD_LOGIC;
                instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
-               instr_addr_misaligned_d, instr_addr_misaligned_w, trap_caught : in STD_LOGIC;
+               instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
+               is_instr_exception_e, trap_caught : in STD_LOGIC;
                trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
                forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
                stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
@@ -132,7 +134,7 @@ architecture Behavioral of core_riscv is
     signal mem_write_m, load_store_m : std_logic;
     signal mem_control_m : std_logic_vector(3 downto 0);
     
-    signal csr_write_d, csr_instr_e, csr_instr_w, mret_instr_e : std_logic;
+    signal csr_write_d, csr_instr_e, csr_instr_w, mret_instr_e, is_instr_exception_e : std_logic;
     signal instr_addr_misaligned_d, instr_addr_misaligned_w, is_instr_exception_m, trap_caught_w: std_logic;
     signal trap_jump_addr_w : std_logic_vector(31 downto 0);
 
@@ -236,7 +238,9 @@ begin
         is_instr_exception_m => is_instr_exception_m,
         trap_jump_addr_w => trap_jump_addr_w,
         trap_caught_w => trap_caught_w,
-        mret_instr_e => mret_instr_e
+        mret_instr_e => mret_instr_e,
+        instr_addr_misaligned_w => instr_addr_misaligned_w,
+        is_instr_exception_e => is_instr_exception_e
         );
     
     hazard_block: hazard_unit port map(
@@ -261,6 +265,7 @@ begin
         instr_addr_misaligned_w => instr_addr_misaligned_w, 
         trap_jump_address => trap_jump_addr_w,
         trap_caught => trap_caught_w,
+        is_instr_exception_e => is_instr_exception_e,
         
         data_ack => d_ack,
         forward_a_e => forward_a_e,

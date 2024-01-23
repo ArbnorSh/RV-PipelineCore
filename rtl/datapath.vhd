@@ -43,6 +43,7 @@ entity datapath is
            instr_addr_misaligned_d : out STD_LOGIC;
            instr_addr_misaligned_w : out STD_LOGIC;
            is_instr_exception_m : out STD_LOGIC;
+           is_instr_exception_e : out STD_LOGIC;
            trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
            trap_caught_w : out STD_LOGIC;
            mret_instr_e : in STD_LOGIC);
@@ -206,7 +207,7 @@ architecture Behavioral of datapath is
     
     -- excpetions
     signal is_instr_exception_f, is_instr_exception_d: std_logic;
-    signal is_instr_exception_e, instr_addr_misaligned_f, instr_addr_misaligned_e, instr_addr_misaligned_m: std_logic;
+    signal instr_addr_misaligned_f, instr_addr_misaligned_e, instr_addr_misaligned_m: std_logic;
     signal is_instr_exception_w : std_logic;
 
 begin
@@ -223,12 +224,14 @@ begin
     pc_register: flopenr generic map(32) port map(
         clk => clk,
         reset => reset,
-        enable => (not stall_f) or pc_src_e or trap_caught_w,
+        enable => (not stall_f) or (pc_src_e and not is_instr_exception_e) or trap_caught_w,
         d => pc_next_f,
         q => pc_f
         );
         
     instr_addr_misaligned_f <= or pc_f(1 downto 0);
+--    For except_test_01.mem
+--    instr_addr_misaligned_f <= '1' when pc_f(31 downto 0) = 32X"18" else '0';
     is_instr_exception_f <= '1' when instr_addr_misaligned_f = '1' else '0';
         
     pc_add_4: adder port map(
