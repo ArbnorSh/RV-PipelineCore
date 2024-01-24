@@ -11,10 +11,12 @@ entity hazard_unit is
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
            instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
            illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
+           load_misaligned_m, store_misaligned_m : in STD_LOGIC;
            is_instr_exception_e, trap_caught : in STD_LOGIC;
            trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
-           stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
+           stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
+           flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
 end hazard_unit;
 
 architecture Behavioral of hazard_unit is
@@ -137,8 +139,10 @@ begin
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
-    flush_d <= (pc_src_e and (not is_instr_exception_e) ) or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d);
-    flush_e <= lw_stall_d or (pc_src_e and (not is_instr_exception_e) ) or csr_pending;
+    flush_d <= (pc_src_e and (not is_instr_exception_e) ) or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d)
+                or (load_misaligned_m or store_misaligned_m);
+    flush_e <= lw_stall_d or (pc_src_e and (not is_instr_exception_e) ) or csr_pending or (load_misaligned_m or store_misaligned_m);
+    flush_m <= (load_misaligned_m or store_misaligned_m);
     flush_w <= stall_m;
 
 end Behavioral;

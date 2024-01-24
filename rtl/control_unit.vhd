@@ -22,6 +22,7 @@ entity control_unit is
            pc_target_src_e : out STD_LOGIC;
            load_instr_e : out STD_LOGIC;
            stall_m : in STD_LOGIC;
+           flush_m : in STD_LOGIC;
            mem_write_m : out STD_LOGIC;
            reg_write_m : out STD_LOGIC;
            mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
@@ -213,11 +214,12 @@ begin
     pc_src_e <= take_branch_e or jump_e;
     result_src_b0_e <= result_src_e(0);
     
-    control_reg_m: flopenr generic map(8)
+    control_reg_m: flopenrc generic map(8)
         port map(
             clk => clk,
             reset => reset,
             enable => (not stall_m),
+            clear => flush_m,
             d => (reg_write_e & result_src_e & mem_write_e & load_store_e
                   & funct3_e),
             q => output_from_m_flopr

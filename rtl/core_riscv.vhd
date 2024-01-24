@@ -44,6 +44,7 @@ architecture Behavioral of core_riscv is
                pc_target_src_e : out STD_LOGIC;
                load_instr_e : out STD_LOGIC;
                stall_m : in STD_LOGIC;
+               flush_m : in STD_LOGIC;
                mem_write_m : out STD_LOGIC;
                reg_write_m : out STD_LOGIC;
                mem_control_m : out STD_LOGIC_VECTOR (3 downto 0);
@@ -82,6 +83,7 @@ architecture Behavioral of core_riscv is
                load_instr_e : in STD_LOGIC;
                csr_instr_e : out STD_LOGIC;
                stall_m : in STD_LOGIC;
+               flush_m : in STD_LOGIC;
                mem_write_m : in STD_LOGIC;
                write_data_m : out STD_LOGIC_VECTOR (31 downto 0);
                alu_result_m : out STD_LOGIC_VECTOR (31 downto 0);
@@ -99,8 +101,8 @@ architecture Behavioral of core_riscv is
                trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
                trap_caught_w : out STD_LOGIC;
                mret_instr_e : in STD_LOGIC;
-               illegal_instruction_d: in STD_LOGIC;
-               illegal_instruction_w: out STD_LOGIC);
+               illegal_instruction_d, load_store_m : in STD_LOGIC; 
+               illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -113,16 +115,18 @@ architecture Behavioral of core_riscv is
                instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
                instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
                illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
+               load_misaligned_m, store_misaligned_m : in STD_LOGIC;
                is_instr_exception_e, trap_caught : in STD_LOGIC;
                trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
                forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
-               stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
+               stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
+               flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
     end component;
     
     signal instr_d : std_logic_vector(31 downto 0);
     signal imm_src_d : std_logic_vector(2 downto 0);
     signal zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
-    signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
+    signal flush_m, result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w, pc_target_src_e: std_logic;
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
     signal rs1_d, rs2_d, rs1_e, rs2_e, rd_e, rd_m, rd_w: std_logic_vector(4 downto 0);
@@ -137,7 +141,7 @@ architecture Behavioral of core_riscv is
     signal csr_write_d, csr_instr_e, csr_instr_w, mret_instr_e, is_instr_exception_e : std_logic;
     signal instr_addr_misaligned_d, instr_addr_misaligned_w, is_instr_exception_m, trap_caught_w: std_logic;
     signal trap_jump_addr_w : std_logic_vector(31 downto 0);
-    signal illegal_instruction_d, illegal_instruction_w : std_logic;
+    signal illegal_instruction_d, illegal_instruction_w, store_misaligned_m, load_misaligned_m : std_logic;
 
 begin
 
@@ -177,6 +181,7 @@ begin
         mem_control_m => mem_control_m,
         load_store_m => load_store_m,
         
+        flush_m => flush_m,
         flush_w => flush_w,
         
         reg_write_w => reg_write_w,
@@ -194,6 +199,7 @@ begin
         stall_m => stall_m,
         flush_d => flush_d,
         flush_e => flush_e,
+        flush_m => flush_m,
         flush_w => flush_w,
         
         pc_f => pc_f,
@@ -234,6 +240,8 @@ begin
         result_src_w => result_src_w,
         rd_w => rd_w,
         
+        load_store_m => load_store_m,
+        
         instr_addr_misaligned_d => instr_addr_misaligned_d,
         is_instr_exception_m => is_instr_exception_m,
         trap_jump_addr_w => trap_jump_addr_w,
@@ -242,7 +250,9 @@ begin
         instr_addr_misaligned_w => instr_addr_misaligned_w,
         is_instr_exception_e => is_instr_exception_e,
         illegal_instruction_d => illegal_instruction_d,
-        illegal_instruction_w => illegal_instruction_w
+        illegal_instruction_w => illegal_instruction_w,
+        load_misaligned_m => load_misaligned_m,
+        store_misaligned_m => store_misaligned_m
         );
     
     hazard_block: hazard_unit port map(
@@ -270,6 +280,8 @@ begin
         trap_jump_address => trap_jump_addr_w,
         trap_caught => trap_caught_w,
         is_instr_exception_e => is_instr_exception_e,
+        store_misaligned_m => store_misaligned_m,
+        load_misaligned_m => load_misaligned_m,
         
         data_ack => d_ack,
         forward_a_e => forward_a_e,
@@ -280,6 +292,7 @@ begin
         stall_m => stall_m,
         flush_d => flush_d,
         flush_e => flush_e,
+        flush_m => flush_m,
         flush_w => flush_w,
         
         csr_instr_e => csr_instr_e,

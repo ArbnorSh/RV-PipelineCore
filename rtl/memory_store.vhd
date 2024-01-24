@@ -6,13 +6,28 @@ entity memory_store is
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
            addr : in STD_LOGIC_VECTOR(1 downto 0);
            mem_write: in STD_LOGIC;
-           write_data_output : out STD_LOGIC_VECTOR (31 downto 0));
+           write_data_output : out STD_LOGIC_VECTOR (31 downto 0);
+           store_misaligned : out STD_LOGIC);
 end memory_store;
 
 architecture Behavioral of memory_store is
 
 begin
-
+    
+    process(all)
+    begin
+    
+        if mem_write = '1' then
+            -- check for alignment
+            case funct3(1 downto 0) is
+              when "00"   => store_misaligned <= '0';                        -- byte
+              when "01"   => store_misaligned <= addr(0);                 -- half-word
+              when others => store_misaligned <= addr(1) or addr(0);   -- word
+            end case;        
+        end if;
+    
+    end process;
+    
     process(all)
     begin
     

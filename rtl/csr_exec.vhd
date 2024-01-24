@@ -19,7 +19,8 @@ entity csr_exec is
            rd1 : in STD_LOGIC_VECTOR (31 downto 0);
            imm_ext : in STD_LOGIC_VECTOR (31 downto 0);
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
-           illegal_instruction, instr_addr_misaligned : in std_logic;
+           illegal_instruction, instr_addr_misaligned : in STD_LOGIC;
+           load_misaligned, store_misaligned : in STD_LOGIC;
            instr_except_pc : std_logic_vector(31 downto 0);
            out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
            out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
@@ -73,7 +74,8 @@ begin
     process(all)
     begin
     
-        is_exception <= csr_mstatus_mie and (instr_addr_misaligned or illegal_instruction);
+        is_exception <= csr_mstatus_mie and (instr_addr_misaligned or illegal_instruction
+                                             or load_misaligned or store_misaligned);
         trap_caught <= is_exception;
         
         if is_exception = '1' then
@@ -81,6 +83,10 @@ begin
                 mtrap_cause <= 4D"00";
             elsif illegal_instruction = '1' then
                 mtrap_cause <= 4D"02";
+            elsif load_misaligned = '1' then
+                mtrap_cause <= 4D"04";
+            elsif store_misaligned = '1' then
+                mtrap_cause <= 4D"06";
             end if;
         end if;
         

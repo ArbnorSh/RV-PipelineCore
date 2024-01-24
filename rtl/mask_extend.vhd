@@ -5,12 +5,28 @@ entity mask_extend is
     Port ( in_data : in STD_LOGIC_VECTOR (31 downto 0);
            address : in STD_LOGIC_VECTOR (1 downto 0);
            control : in STD_LOGIC_VECTOR (2 downto 0);
-           out_data : out STD_LOGIC_VECTOR (31 downto 0));
+           is_load : in STD_LOGIC;
+           out_data : out STD_LOGIC_VECTOR (31 downto 0);
+           load_misaligned : out STD_LOGIC);
 end mask_extend;
 
 architecture Behavioral of mask_extend is
     signal masked_output: std_logic_vector(31 downto 0);
 begin
+
+    process(all)
+    begin
+    
+        if is_load = '1' then
+            -- check for alignment
+            case control(1 downto 0) is
+              when "00"   => load_misaligned <= '0';                        -- byte
+              when "01"   => load_misaligned <= address(0);                 -- half-word
+              when others => load_misaligned <= address(1) or address(0);   -- word
+            end case;        
+        end if;
+    
+    end process;
     
     process(in_data, control, address)
     begin
