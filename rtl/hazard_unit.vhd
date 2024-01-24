@@ -10,6 +10,7 @@ entity hazard_unit is
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
            instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
+           illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
            is_instr_exception_e, trap_caught : in STD_LOGIC;
            trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
@@ -117,9 +118,9 @@ begin
         
             if reset then
                 pending_exception_f <= '0';
-            elsif instr_addr_misaligned_d = '1' then
+            elsif instr_addr_misaligned_d = '1' or illegal_instruction_d = '1' then
                 pending_exception_f <= '1';
-            elsif instr_addr_misaligned_w = '1' then
+            elsif instr_addr_misaligned_w = '1' or illegal_instruction_w = '1' then
                 pending_exception_f <= '0';
             end if;
         

@@ -4,9 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity control_unit is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
-           opcode_d : in STD_LOGIC_VECTOR (6 downto 0);
-           funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
-           funct7_b5_d : in STD_LOGIC;
+           instr_d : in STD_LOGIC_VECTOR(31 downto 0);
            imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
            csr_write_d : out STD_LOGIC;
            stall_e : in STD_LOGIC;
@@ -31,13 +29,16 @@ entity control_unit is
            flush_w : in STD_LOGIC;
            reg_write_w : out STD_LOGIC;
            result_src_w : out STD_LOGIC_VECTOR (1 downto 0);
-           mret_instr_e : out STD_LOGIC);
+           mret_instr_e : out STD_LOGIC;
+           illegal_instruction_d : out STD_LOGIC);
 end control_unit;
 
 architecture Behavioral of control_unit is
     component main_decoder is
         Port ( op : in STD_LOGIC_VECTOR (6 downto 0);
                funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               rs1, rd : in STD_LOGIC_VECTOR(4 downto 0);
+               imm_i_type : in STD_LOGIC_VECTOR(11 downto 0);
                branch : out STD_LOGIC;
                jump : out STD_LOGIC;
                result_src : out STD_LOGIC_VECTOR (1 downto 0);
@@ -49,9 +50,10 @@ architecture Behavioral of control_unit is
                alu_op : out STD_LOGIC_VECTOR (1 downto 0);
                load_instr : out STD_LOGIC;
                pc_target_src: out STD_LOGIC;
-               csr_write : out STD_LOGIC;
                load_store : out STD_LOGIC;
-               mret_instr : out STD_LOGIC);
+               csr_write : out STD_LOGIC;
+               mret_instr : out STD_LOGIC;
+               illegal_instruction : out STD_LOGIC);
     end component;
     
     component alu_decoder is
@@ -131,12 +133,28 @@ architecture Behavioral of control_unit is
     signal mask_src_d, mask_src_e: std_logic_vector(2 downto 0);
     signal load_store_d, load_store_e : std_logic;
     signal mret_instr_d : std_logic;
+    signal opcode_d : std_logic_vector(6 downto 0);
+    signal funct3_d : std_logic_vector(2 downto 0);
+    signal funct7_b5_d : std_logic;
+    signal rs1_d, rs2_d, rd_d : std_logic_vector(4 downto 0);
+    signal imm_i_type_d : std_logic_vector(11 downto 0);
     
 begin
+
+    opcode_d <= instr_d(6 downto 0);
+    funct3_d <= instr_d(14 downto 12);
+    funct7_b5_d <= instr_d(30);
+    rs1_d <= instr_d(19 downto 15);
+    rs2_d <= instr_d(24 downto 20);
+    rd_d <= instr_d(11 downto 7);
+    imm_i_type_d <= instr_d(31 downto 20);
     
     main_dec: main_decoder port map(
         op => opcode_d,
         funct3 => funct3_d,
+        rs1 => rs1_d,
+        rd => rd_d,
+        imm_i_type => imm_i_type_d,
         
         branch => branch_d,
         jump => jump_d,
@@ -155,7 +173,8 @@ begin
         load_store => load_store_d,
         
         csr_write => csr_write_d,
-        mret_instr => mret_instr_d
+        mret_instr => mret_instr_d,
+        illegal_instruction => illegal_instruction_d
         );
     
     alu_dec: alu_decoder port map(

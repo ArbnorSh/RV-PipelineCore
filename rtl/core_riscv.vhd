@@ -26,9 +26,7 @@ architecture Behavioral of core_riscv is
     component control_unit is
         Port ( clk : in STD_LOGIC;
                reset : in STD_LOGIC;
-               opcode_d : in STD_LOGIC_VECTOR (6 downto 0);
-               funct3_d : in STD_LOGIC_VECTOR (2 downto 0);
-               funct7_b5_d : in STD_LOGIC;
+               instr_d : in STD_LOGIC_VECTOR(31 downto 0);
                imm_src_d : out STD_LOGIC_VECTOR (2 downto 0);
                csr_write_d : out STD_LOGIC;
                stall_e : in STD_LOGIC;
@@ -53,7 +51,8 @@ architecture Behavioral of core_riscv is
                flush_w : in STD_LOGIC;
                reg_write_w : out STD_LOGIC;
                result_src_w : out STD_LOGIC_VECTOR (1 downto 0);
-               mret_instr_e : out STD_LOGIC);
+               mret_instr_e : out STD_LOGIC;
+               illegal_instruction_d : out STD_LOGIC);
     end component;
     
     component datapath is
@@ -62,9 +61,7 @@ architecture Behavioral of core_riscv is
                stall_f : in STD_LOGIC;
                pc_f : out STD_LOGIC_VECTOR (31 downto 0);
                instr_f : in STD_LOGIC_VECTOR (31 downto 0);
-               op_d : out STD_LOGIC_VECTOR (6 downto 0);
-               funct3_d : out STD_LOGIC_VECTOR (2 downto 0);
-               funct7_b5_d : out STD_LOGIC;
+               instr_d : out STD_LOGIC_VECTOR(31 downto 0);
                stall_d : in STD_LOGIC;
                flush_d : in STD_LOGIC;
                imm_src_d : in STD_LOGIC_VECTOR (2 downto 0);
@@ -101,7 +98,9 @@ architecture Behavioral of core_riscv is
                is_instr_exception_e : out STD_LOGIC;
                trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
                trap_caught_w : out STD_LOGIC;
-               mret_instr_e : in STD_LOGIC);
+               mret_instr_e : in STD_LOGIC;
+               illegal_instruction_d: in STD_LOGIC;
+               illegal_instruction_w: out STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -113,15 +112,16 @@ architecture Behavioral of core_riscv is
                reg_write_m, reg_write_w : in STD_LOGIC;
                instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
                instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
+               illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
                is_instr_exception_e, trap_caught : in STD_LOGIC;
                trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
                forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
                stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w: out STD_LOGIC);
     end component;
     
-    signal op_d : std_logic_vector(6 downto 0);
-    signal funct3_d, imm_src_d: std_logic_vector(2 downto 0);
-    signal funct_7_b5_d, zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
+    signal instr_d : std_logic_vector(31 downto 0);
+    signal imm_src_d : std_logic_vector(2 downto 0);
+    signal zero_e, pc_src_e, alu_src_a_e, alu_src_b_e, carry_e: std_logic;
     signal result_src_b0_e, reg_write_m, reg_write_w, negative_e, overflow_e: std_logic;
     signal stall_f, stall_d, stall_e, stall_m, flush_d, flush_e, flush_w, pc_target_src_e: std_logic;
     signal result_src_w, forward_a_e, forward_b_e: std_logic_vector(1 downto 0);
@@ -137,6 +137,7 @@ architecture Behavioral of core_riscv is
     signal csr_write_d, csr_instr_e, csr_instr_w, mret_instr_e, is_instr_exception_e : std_logic;
     signal instr_addr_misaligned_d, instr_addr_misaligned_w, is_instr_exception_m, trap_caught_w: std_logic;
     signal trap_jump_addr_w : std_logic_vector(31 downto 0);
+    signal illegal_instruction_d, illegal_instruction_w : std_logic;
 
 begin
 
@@ -144,9 +145,7 @@ begin
         clk => clk,
         reset => reset,
         
-        opcode_d => op_d,
-        funct3_d => funct3_d,
-        funct7_b5_d => funct_7_b5_d,
+        instr_d => instr_d,
         
         imm_src_d => imm_src_d,
         csr_write_d => csr_write_d,
@@ -181,7 +180,9 @@ begin
         flush_w => flush_w,
         
         reg_write_w => reg_write_w,
-        result_src_w => result_src_w);
+        result_src_w => result_src_w,
+        illegal_instruction_d => illegal_instruction_d
+        );
         
      datapath_block: datapath port map(
         clk => clk,
@@ -198,9 +199,8 @@ begin
         pc_f => pc_f,
         instr_f => instruction_f,
         
-        op_d => op_d,
-        funct3_d => funct3_d,
-        funct7_b5_d => funct_7_b5_d,
+        instr_d => instr_d,
+        
         imm_src_d => imm_src_d,
         rs1_d => rs1_d,
         rs2_d => rs2_d,
@@ -240,7 +240,9 @@ begin
         trap_caught_w => trap_caught_w,
         mret_instr_e => mret_instr_e,
         instr_addr_misaligned_w => instr_addr_misaligned_w,
-        is_instr_exception_e => is_instr_exception_e
+        is_instr_exception_e => is_instr_exception_e,
+        illegal_instruction_d => illegal_instruction_d,
+        illegal_instruction_w => illegal_instruction_w
         );
     
     hazard_block: hazard_unit port map(
@@ -261,6 +263,8 @@ begin
         instruction_ack => instr_ack,
         instruction_valid => is_instruction_valid,
         
+        illegal_instruction_d => illegal_instruction_d,
+        illegal_instruction_w => illegal_instruction_w,    
         instr_addr_misaligned_d => instr_addr_misaligned_d,
         instr_addr_misaligned_w => instr_addr_misaligned_w, 
         trap_jump_address => trap_jump_addr_w,

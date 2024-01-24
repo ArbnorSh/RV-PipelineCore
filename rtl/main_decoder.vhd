@@ -4,6 +4,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity main_decoder is
     Port ( op : in STD_LOGIC_VECTOR (6 downto 0);
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+           rs1, rd : in STD_LOGIC_VECTOR(4 downto 0);
+           imm_i_type : in STD_LOGIC_VECTOR(11 downto 0);
            branch : out STD_LOGIC;
            jump : out STD_LOGIC;
            result_src : out STD_LOGIC_VECTOR (1 downto 0);
@@ -17,7 +19,8 @@ entity main_decoder is
            pc_target_src: out STD_LOGIC;
            load_store : out STD_LOGIC;
            csr_write : out STD_LOGIC;
-           mret_instr : out STD_LOGIC);
+           mret_instr : out STD_LOGIC;
+           illegal_instruction : out STD_LOGIC);
 end main_decoder;
 
 architecture Behavioral of main_decoder is
@@ -29,8 +32,9 @@ architecture Behavioral of main_decoder is
     signal out_control: std_logic_vector(17 downto 0);
 begin
 
-    process(op)
+    process(all)
     begin
+        illegal_instruction <= '0';
     
         case op is
             -- loads
@@ -62,14 +66,20 @@ begin
                 out_control <= b"1_100_-_-_0_11_0_--_0_0_1_0_0_0";
             -- csr
             when "1110011" =>
-                -- mret : TODO eret??
                 if funct3 = "000" then
-                    out_control <= b"0_---_-_-_0_00_0_--_1_0_-_0_0_1";
+                    -- mret
+                    if rs1 = 5D"00" and rd = 5D"00" and imm_i_type = 12D"770" then
+                        out_control <= b"0_---_-_-_0_00_0_--_1_0_-_0_0_1";
+                    else
+                        illegal_instruction <= '1';
+                    end if;
                 else
                     out_control <= b"1_101_-_-_0_00_0_--_0_0_-_0_1_0";
                 end if;
-            when others =>
+            when "0000000" =>
                 out_control <= "000000000000000000";
+            when others =>
+                illegal_instruction <= '1';
         end case;
         
     end process;
@@ -78,6 +88,5 @@ begin
      mem_write, result_src(1), result_src(0), branch, alu_op(1), 
      alu_op(0), jump, load_instr, pc_target_src, load_store, csr_write,
      mret_instr) <= out_control;
-
 
 end Behavioral;
