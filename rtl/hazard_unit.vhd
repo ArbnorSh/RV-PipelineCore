@@ -12,7 +12,8 @@ entity hazard_unit is
            instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
            illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
            load_misaligned_m, store_misaligned_m : in STD_LOGIC;
-           is_instr_exception_e, trap_caught : in STD_LOGIC;
+           is_instr_exception_e, is_instr_exception_m: in STD_LOGIC;
+           is_instr_exception_w, trap_caught : in STD_LOGIC;
            trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
            stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
@@ -24,8 +25,12 @@ architecture Behavioral of hazard_unit is
     signal ignore_instr_mem_handshake : std_logic := '0';
     signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
     signal csr_pending : std_logic;
-    signal pending_exception_f : std_logic;
+    signal jump_instr, pending_exception_f : std_logic;
 begin
+    
+    -- do not jump if jump instruction is invalid
+    -- instruction in pipeline before jump has excepted
+    jump_instr <= pc_src_e and (not is_instr_exception_e) and (not is_instr_exception_m) and (not is_instr_exception_w);
 
     process(all)
     begin
@@ -76,8 +81,7 @@ begin
             else
                 case ignore_instr_mem_handshake is
                     when '0' => 
-                        if (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) 
-                            or trap_caught then
+                        if jump_instr or trap_caught then
                             ignore_instr_mem_handshake <= '1';
                         end if;
     
@@ -140,10 +144,9 @@ begin
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
-    flush_d <= (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) or 
-                (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d) or (load_misaligned_m or store_misaligned_m);
-    flush_e <= lw_stall_d or (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) 
-               or csr_pending or (load_misaligned_m or store_misaligned_m);
+    flush_d <= jump_instr or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d) or 
+               (load_misaligned_m or store_misaligned_m);
+    flush_e <= lw_stall_d or jump_instr or csr_pending or (load_misaligned_m or store_misaligned_m);
     flush_m <= (load_misaligned_m or store_misaligned_m);
     flush_w <= '0'; --stall_m;
 

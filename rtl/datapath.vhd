@@ -47,6 +47,7 @@ entity datapath is
            trap_caught_w : out STD_LOGIC;
            mret_instr_e : in STD_LOGIC;
            illegal_instruction_d, load_store_m : in STD_LOGIC; 
+           is_instr_exception_w : out STD_LOGIC;
            illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC);
 end datapath;
 
@@ -216,7 +217,7 @@ architecture Behavioral of datapath is
     -- excpetions
     signal is_instr_exception_f, is_instr_exception_d: std_logic;
     signal instr_addr_misaligned_f, instr_addr_misaligned_e, instr_addr_misaligned_m: std_logic;
-    signal is_instr_exception_w, illegal_instruction_e, illegal_instruction_m : std_logic;
+    signal illegal_instruction_e, illegal_instruction_m : std_logic;
     signal store_misaligned_w, load_misaligned_w: std_logic;
 
 begin
