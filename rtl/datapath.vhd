@@ -233,7 +233,8 @@ begin
     pc_register: flopenr generic map(32) port map(
         clk => clk,
         reset => reset,
-        enable => (not stall_f) or (pc_src_e and not is_instr_exception_e) or trap_caught_w,
+        enable => (not stall_f) or (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) 
+                   or trap_caught_w,
         d => pc_next_f,
         q => pc_f
         );

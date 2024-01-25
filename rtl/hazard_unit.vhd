@@ -76,7 +76,8 @@ begin
             else
                 case ignore_instr_mem_handshake is
                     when '0' => 
-                        if (pc_src_e and (not is_instr_exception_e) ) or trap_caught then
+                        if (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) 
+                            or trap_caught then
                             ignore_instr_mem_handshake <= '1';
                         end if;
     
@@ -139,10 +140,11 @@ begin
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
-    flush_d <= (pc_src_e and (not is_instr_exception_e) ) or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d)
-                or (load_misaligned_m or store_misaligned_m);
-    flush_e <= lw_stall_d or (pc_src_e and (not is_instr_exception_e) ) or csr_pending or (load_misaligned_m or store_misaligned_m);
+    flush_d <= (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) or 
+                (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d) or (load_misaligned_m or store_misaligned_m);
+    flush_e <= lw_stall_d or (pc_src_e and ( (not is_instr_exception_e) and (not (load_misaligned_m or store_misaligned_m) )) ) 
+               or csr_pending or (load_misaligned_m or store_misaligned_m);
     flush_m <= (load_misaligned_m or store_misaligned_m);
-    flush_w <= stall_m;
+    flush_w <= '0'; --stall_m;
 
 end Behavioral;

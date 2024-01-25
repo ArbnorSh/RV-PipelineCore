@@ -127,13 +127,13 @@ begin
     process(clk) begin
         
         if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = x"10" and d_wb_data_w = x"1C" then
+            if d_wb_addr = D"72" and d_wb_data_w = x"02" then
                 risc_except_1 <= 1;
             end if;
         end if;
         
         if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = x"20" and d_wb_data_w = x"99" then
+            if d_wb_addr = D"76" and d_wb_data_w = x"09" then
                 risc_except_2 <= 1;
             end if;
         end if;

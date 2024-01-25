@@ -16,7 +16,8 @@ begin
 
     process(all)
     begin
-    
+        load_misaligned <= '0';
+        
         if is_load = '1' then
             -- check for alignment
             case control(1 downto 0) is

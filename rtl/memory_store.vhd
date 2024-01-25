@@ -17,6 +17,8 @@ begin
     process(all)
     begin
     
+        store_misaligned <= '0';
+    
         if mem_write = '1' then
             -- check for alignment
             case funct3(1 downto 0) is
