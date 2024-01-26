@@ -11,6 +11,10 @@ architecture Behavioral of testbench_processor is
         Port ( wb_clk : in STD_LOGIC;
                wb_reset : in STD_LOGIC;
                
+               --Interrupts
+               interrupt_external : in STD_LOGIC;
+               interrupt_timer : in STD_LOGIC;
+               
                -- Instruction Wishbone Port
                instr_wb_adr : out STD_LOGIC_VECTOR(31 downto 0);
                instr_wb_data : in STD_LOGIC_VECTOR(31 downto 0);
@@ -62,11 +66,16 @@ architecture Behavioral of testbench_processor is
     signal d_wb_addr, d_wb_data_r, d_wb_data_w : std_logic_vector(31 downto 0);
     signal d_wb_we, d_wb_stb, d_wb_cyc, d_wb_ack: std_logic;
     signal d_wb_sel : std_logic_vector(3 downto 0);
+    
+    signal intr_ext, intr_timer : std_logic := '0';
 begin
     
     dut: processor port map(
         wb_clk => clk,
         wb_reset => reset,
+        
+        interrupt_external => intr_ext,
+        interrupt_timer => intr_timer,        
         
         instr_wb_adr => instr_wb_adr,
         instr_wb_data => instr_wb_data,
