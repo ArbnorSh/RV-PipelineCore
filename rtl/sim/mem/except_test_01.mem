@@ -1,0 +1,88 @@
+
+## from 80 mscratch
+#li s0, 80
+#csrw mscratch, s0
+#
+#addi t0, zero, 0x24
+#csrw mtvec, t0
+#
+## enable mie
+#li t1, 0x08
+#csrw mstatus, t1
+#
+#j _test
+#
+#j _exit
+#
+#_test:
+#addi s4, zero, 0x00
+#
+#
+#_exception_handler:
+#    csrrw t0, mscratch, t0 # swap
+#    sw t1, 0(t0)
+#    sw t2, 4(t0)
+#    sw t3, 8(t0)
+#    li t3, 0x10
+#
+#    # cause of exception
+#    csrr t1, mcause
+#    addi t2, x0, 0x00 # t2 = 0 (instruction address misaligned)
+#
+#    illegalinstr:
+#        bne t1, t2, done
+#            csrr t2, mepc
+#            addi t2, zero, 0x1C
+#            csrw mepc, t2 # mepc = 0x1C
+#            j done
+#
+#    done:
+#        sw t2, 0(t3) # [0x10] = 0x1C
+#        lw t1, 0(t0)
+#        lw t2, 4(t0)
+#        lw t3, 8(t0)
+#        csrrw t0, mscratch, t0
+#        mret
+#
+#end:
+#    li s1, 0x100
+#    li s2, 0x20
+#    sw s1, 0(s2)
+#
+#_exit:
+#    li s1, 0x99
+#    li s2, 0x20
+#    sw s1, 0(s2) # [0x20] = 0x99
+05000413
+34041073
+02400293
+30529073
+00800313
+30031073
+0080006f
+05c0006f
+00000a13
+340292f3
+0062a023
+0072a223
+01c2a423
+01000e13
+34202373
+00000393
+00731a63
+341023f3
+01c00393
+34139073
+0040006f
+007e2023
+0002a303
+0042a383
+0082ae03
+340292f3
+30200073
+10000493
+02000913
+00992023
+09900493
+02000913
+00992023

@@ -17,7 +17,7 @@ architecture Behavioral of instruction_memory_wb is
     type instr_mem_t is array(127 downto 0) of std_logic_vector(31 downto 0);
     
     impure function init_ram_hex return instr_mem_t is
-        file text_file: text open read_mode is "riscv_program_02.mem";
+        file text_file: text open read_mode is "except_test_02.mem";
         variable text_line: line;
         variable ram_content: instr_mem_t;
         variable i, j: integer := 0;

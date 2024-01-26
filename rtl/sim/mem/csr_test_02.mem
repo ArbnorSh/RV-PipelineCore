@@ -1,0 +1,41 @@
+# addi s0, zero, 0x00
+# addi s1, zero, 0x01
+# 
+# addi s2, zero, 0x80
+# addi s3, zero, 0x84
+# 
+# csrr t0, mvendorid
+# 
+# addi s4, zero, 0x88
+# addi s7, zero, 0x8C
+# 
+# csrr t1, misa
+# csrw mtvec, s3
+# csrr s6, mtvec
+# 
+# addi t2, zero, 0x01
+# addi t3, zero, 0x02
+# add s5, t2, t3
+# 
+# 
+# sw t0, 0(s2) # 0x80 = mvendorid = 32
+# sw t1, 0(s3) # 0x84 = misa = 0x40000100
+# sw s5, 0(s4) # 0x88 = 0x03
+# sw s6, 0(s7) # 0x8C = 0x84
+00000413
+00100493
+08000913
+08400993
+f11022f3
+08800a13
+08c00b93
+30102373
+30599073
+30502b73
+00100393
+00200e13
+01c38ab3
+00592023
+0069a023
+015a2023
+016ba023

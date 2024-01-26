@@ -1,0 +1,88 @@
+#li s1, 72
+#
+#li s0, 80
+#csrw mscratch, s0
+#
+#addi t0, zero, 0x2c
+#csrw mtvec, t0
+#
+## enable mie
+#li t1, 0x08
+#csrw mstatus, t1
+#
+#ebreak
+#
+## Misaligned load
+#lw s2, 1(t1)
+#
+## should not happen
+#sw s0, 0(s1) # [22] = 80
+#
+#j nop_exit
+#
+#_exception_handler:
+#    csrrw t0, mscratch, t0
+#    sw t1, 0(t0) 
+#    sw t2, 4(t0)
+#    
+#    csrr t1, mcause
+#    addi t2, x0, 2 # t2 = 2 (illegal instruction exception code)
+#    
+#    illegal_instruction:
+#        bne t1, t2, other_except
+#        csrr t2, mepc
+#        addi t2, t2, 4
+#        csrw mepc, t2 
+#        sw t1, 0(s1) # [72] = 0x02
+#        j done
+#    
+#    other_except:
+#        addi t2, x0, 4 # t2 = 4 (misaligned load exception code)
+#        bne t1, t2, done
+#        j exit
+#    
+#    done:
+#        lw t1, 0(t0)
+#        lw t2, 4(t0)
+#        csrrw t0, mscratch, t0 
+#        mret
+#
+#
+#exit:
+#li s3, 0x09
+#sw s3, 4(s1) # [76] = 0x09
+#
+#nop_exit:
+#beq x0, x0, nop_exit        # infinite loop
+04800493
+05000413
+34041073
+02c00293
+30529073
+00800313
+30031073
+00100073
+00132903
+0084a023
+0540006f
+340292f3
+0062a023
+0072a223
+34202373
+00200393
+00731c63
+341023f3
+00438393
+34139073
+0064a023
+0100006f
+00400393
+00731463
+0140006f
+0002a303
+0042a383
+340292f3
+30200073
+00900993
+0134a223
+fe0004e3
