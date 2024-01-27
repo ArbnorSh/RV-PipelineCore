@@ -1,22 +1,27 @@
-# s0 = [0x80]
-li s0, 0x80
+.global _start
+.text
 
-# mtvec = _exception_handler
-la t0, _exception_handler
-csrw mtvec, t0
+_start:
 
-# enable mie
-li t1, 0x08
-csrw mstatus, t1
+    # s0 = [0x80]
+    li s0, 0x80
 
-# enable meie
-li t1, 0x800
-csrw mie, t1
+    # mtvec = _exception_handler
+    la t0, _exception_handler
+    csrw mtvec, t0
 
-# infinite loop
-# after some time, interrupt will trigger
-nop_exit:
-beq x0, x0, nop_exit
+    # enable mie
+    li t1, 0x08
+    csrw mstatus, t1
+
+    # enable meie
+    li t1, 0x800
+    csrw mie, t1
+
+    # infinite loop
+    # after some time, interrupt will trigger
+    nop_exit:
+    beq x0, x0, nop_exit
 
 
 _exception_handler:

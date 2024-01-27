@@ -40,11 +40,13 @@ end executable_image;
             data = 'x' + '"' + line + '"' + ','
             hex_data.append(data)
             raw_file_size += 4 # +4 bytes for each instruction
-        
+
         if raw_file_size == 0:
             print(f"Input File is Empty : {input_file}")
             quit()
         print(f"Raw File Size: {raw_file_size}")
+    
+    hex_data[-1] = hex_data[-1].replace(',', '')
 
     current_time = time.ctime(time.time())
 

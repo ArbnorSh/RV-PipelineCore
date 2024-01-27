@@ -3,7 +3,7 @@ USER_SRC ?= $(wildcard ./*.c) $(wildcard ./*.s) $(wildcard ./*.cpp) $(wildcard .
 USER_INC ?= -I .
 ASM_INC ?= -I .
 
-RV_PREFIX ?= riscv64-unknown-elf-
+RISCV_PREFIX ?= riscv64-unknown-elf-
 
 # CPU architecture and ABI
 MARCH ?= rv32i_zicsr
@@ -21,36 +21,51 @@ PROCESSOR_SW_COMMON_PATH = $(PROCESSOR_HOME)/sw/common
 
 LD_SCRIPT ?= $(PROCESSOR_SW_COMMON_PATH)/processor.ld
 
-EXE_ELF      = app.elf
-
 CC      = $(RISCV_PREFIX)gcc
 OBJDUMP = $(RISCV_PREFIX)objdump
 OBJCOPY = $(RISCV_PREFIX)objcopy
 SIZE    = $(RISCV_PREFIX)size
 
 CFLAGS += -march=$(MARCH) -mabi=$(MABI) -Wall -ffunction-sections 
-CFLAGS += -fdata-sections -nostartfiles  -ffreestanding -g -Os
+CFLAGS += -fdata-sections -nostartfiles -ffreestanding -g -Os
 
 LFLAGS := -T $(LD_SCRIPT) -Wl,--gc-sections
+OBJECTS = $(USER_SRC:%=%.o)
 
 ######################################################################################
+
+EXE_ELF = $(shell basename $(CURDIR))
 
 default: build 
 
 .PHONY: build
-build: $(EXE_ELF)
+build: $(EXE_ELF).elf
 
-$(EXE_ELF): $(USER_SRC)
-	$(RV_PREFIX)-gcc $(CFLAGS) -o $@ $^ $(LFLAGS)
-	$(RV_PREFIX)-objdump -htd $@ > $(basename $@).lst
-	$(RV_PREFIX)-objcopy -O binary $@ $(basename $@).bin
+# source file into an object file
+%.s.o: %.s
+	@$(CC) -c $(CFLAGS) $< -o $@
+
+%.S.o: %.S
+	@$(CC) -c $(CFLAGS) $< -o $@
+
+%.c.o: %.c
+	@$(CC) -c $(CFLAGS) $< -o $@
+
+%.cpp.o: %.cpp
+	@$(CC) -c $(CFLAGS) $< -o $@
+
+# Final executable
+$(EXE_ELF).elf: $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(OBJDUMP) -htd $@ > $(basename $@).lst
+	$(OBJCOPY) -O binary $@ $(basename $@).bin
 	@echo "Generating hex from elf"
-	$(PROCESSOR_IMAGE_GEN) $(basename $@).bin $(basename $@).hex -w 32
+	python $(PROCESSOR_IMAGE_GEN) $(basename $@).bin $(basename $@).hex -w 32
 	@echo "Generating vhdl memory"
-	$(PROCESSOR_IMAGE_GEN_VHD) --hex $(basename $@).hex --vhd $(basename $@).vhd
+	python $(PROCESSOR_IMAGE_GEN_VHD) --hex $(basename $@).hex --vhd $(basename $@).vhd
 	@echo "Installing vhd file to rtl"
 	@cp $(basename $@).vhd $(PROCESSOR_IMAGE_MEM)
 
 .PHONY: clean
 clean:						
-	rm -f *.o *.lst *.elf *.hex *.bin
+	rm -f *.o *.lst *.elf *.hex *.bin *.vhd
