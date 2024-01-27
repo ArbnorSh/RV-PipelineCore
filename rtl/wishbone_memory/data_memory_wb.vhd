@@ -6,6 +6,10 @@ use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 
 entity data_memory_wb is
+    generic(
+    -- power of two
+    SIZE_MEM    : natural := 1024
+    );
     Port ( wb_clk : in STD_LOGIC;
            wb_rst : in STD_LOGIC;
            wb_adr : in STD_LOGIC_VECTOR (31 downto 0);
@@ -19,7 +23,7 @@ end data_memory_wb;
 
 architecture Behavioral of data_memory_wb is
     type mem_array is array (natural range <>) of std_logic_vector(31 downto 0);
-    signal mem : mem_array(0 to 127);
+    signal mem : mem_array(0 to SIZE_MEM/4-1);
     
     signal address: std_logic_vector(29 downto 0);
     signal write_enable : std_logic_vector(3 downto 0);
