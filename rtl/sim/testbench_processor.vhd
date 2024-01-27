@@ -133,21 +133,30 @@ begin
         wait;
     end process;
     
+    -- Interrupt Trigger
+    process begin
+        wait for 1000ns;
+        intr_ext <= '1';
+        
+        wait for 1000ns;
+        intr_ext <= '0';
+        
+        wait for 1000ns;
+        intr_ext <= '1';
+        
+        wait for 1000ns;
+        intr_ext <= '0';
+    end process;
+    
     process(clk) begin
         
         if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = D"72" and d_wb_data_w = x"02" then
+            if d_wb_addr = X"80" and d_wb_data_w = X"8000000B" then
                 risc_except_1 <= 1;
             end if;
         end if;
-        
-        if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = D"76" and d_wb_data_w = x"09" then
-                risc_except_2 <= 1;
-            end if;
-        end if;
                 
-        if risc_except_1 = 1 and risc_except_2 = 1 then
+        if risc_except_1 = 1 then
                 report "Simulated program successfuly" severity failure;
         end if;  
         
