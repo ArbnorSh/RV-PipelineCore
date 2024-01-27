@@ -5,6 +5,10 @@ entity core_riscv is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
            
+           --Interrupts
+           interrupt_external : in STD_LOGIC;
+           interrupt_timer : in STD_LOGIC;
+           
            -- Instruction Wishbone Port
            instr_adr : out STD_LOGIC_VECTOR(31 downto 0);
            instr_data : in STD_LOGIC_VECTOR(31 downto 0);
@@ -59,6 +63,7 @@ architecture Behavioral of core_riscv is
     component datapath is
         Port ( clk : in STD_LOGIC;
                reset : in STD_LOGIC;
+               interrupt_external, interrupt_timer : in STD_LOGIC;
                stall_f : in STD_LOGIC;
                pc_f : out STD_LOGIC_VECTOR (31 downto 0);
                instr_f : in STD_LOGIC_VECTOR (31 downto 0);
@@ -103,7 +108,8 @@ architecture Behavioral of core_riscv is
                mret_instr_e : in STD_LOGIC;
                illegal_instruction_d, load_store_m : in STD_LOGIC;
                is_instr_exception_w : out STD_LOGIC; 
-               illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC);
+               illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
+               take_interrupt_e, take_interrupt_w : out STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -120,6 +126,7 @@ architecture Behavioral of core_riscv is
                is_instr_exception_e, is_instr_exception_m: in STD_LOGIC;
                is_instr_exception_w, trap_caught : in STD_LOGIC;
                trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
+               take_interrupt_e, take_interrupt_w : in STD_LOGIC;
                forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
                stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
                flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
@@ -144,7 +151,7 @@ architecture Behavioral of core_riscv is
     signal instr_addr_misaligned_d, instr_addr_misaligned_w, is_instr_exception_m, trap_caught_w: std_logic;
     signal trap_jump_addr_w : std_logic_vector(31 downto 0);
     signal illegal_instruction_d, illegal_instruction_w, store_misaligned_m, load_misaligned_m : std_logic;
-    signal is_instr_exception_w: std_logic;
+    signal is_instr_exception_w, take_interrupt_e, take_interrupt_w: std_logic;
 
 begin
 
@@ -195,6 +202,9 @@ begin
      datapath_block: datapath port map(
         clk => clk,
         reset => reset,
+        
+        interrupt_external => interrupt_external,
+        interrupt_timer => interrupt_timer,
         
         stall_f => stall_f,
         stall_d => stall_d,
@@ -256,7 +266,10 @@ begin
         illegal_instruction_d => illegal_instruction_d,
         illegal_instruction_w => illegal_instruction_w,
         load_misaligned_m => load_misaligned_m,
-        store_misaligned_m => store_misaligned_m
+        store_misaligned_m => store_misaligned_m,
+        
+        take_interrupt_e => take_interrupt_e,
+        take_interrupt_w => take_interrupt_w
         );
     
     hazard_block: hazard_unit port map(
@@ -276,6 +289,9 @@ begin
         reg_write_w => reg_write_w,
         instruction_ack => instr_ack,
         instruction_valid => is_instruction_valid,
+        
+        take_interrupt_e => take_interrupt_e,
+        take_interrupt_w => take_interrupt_w,
         
         illegal_instruction_d => illegal_instruction_d,
         illegal_instruction_w => illegal_instruction_w,    

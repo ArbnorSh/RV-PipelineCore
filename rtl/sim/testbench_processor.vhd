@@ -11,6 +11,10 @@ architecture Behavioral of testbench_processor is
         Port ( wb_clk : in STD_LOGIC;
                wb_reset : in STD_LOGIC;
                
+               --Interrupts
+               interrupt_external : in STD_LOGIC;
+               interrupt_timer : in STD_LOGIC;
+               
                -- Instruction Wishbone Port
                instr_wb_adr : out STD_LOGIC_VECTOR(31 downto 0);
                instr_wb_data : in STD_LOGIC_VECTOR(31 downto 0);
@@ -62,11 +66,16 @@ architecture Behavioral of testbench_processor is
     signal d_wb_addr, d_wb_data_r, d_wb_data_w : std_logic_vector(31 downto 0);
     signal d_wb_we, d_wb_stb, d_wb_cyc, d_wb_ack: std_logic;
     signal d_wb_sel : std_logic_vector(3 downto 0);
+    
+    signal intr_ext, intr_timer : std_logic := '0';
 begin
     
     dut: processor port map(
         wb_clk => clk,
         wb_reset => reset,
+        
+        interrupt_external => intr_ext,
+        interrupt_timer => intr_timer,        
         
         instr_wb_adr => instr_wb_adr,
         instr_wb_data => instr_wb_data,
@@ -124,21 +133,30 @@ begin
         wait;
     end process;
     
+    -- Interrupt Trigger
+    process begin
+        wait for 1000ns;
+        intr_ext <= '1';
+        
+        wait for 1000ns;
+        intr_ext <= '0';
+        
+        wait for 1000ns;
+        intr_ext <= '1';
+        
+        wait for 1000ns;
+        intr_ext <= '0';
+    end process;
+    
     process(clk) begin
         
         if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = D"72" and d_wb_data_w = x"02" then
+            if d_wb_addr = X"80" and d_wb_data_w = X"8000000B" then
                 risc_except_1 <= 1;
             end if;
         end if;
-        
-        if falling_edge(clk) and d_wb_we = '1' then
-            if d_wb_addr = D"76" and d_wb_data_w = x"09" then
-                risc_except_2 <= 1;
-            end if;
-        end if;
                 
-        if risc_except_1 = 1 and risc_except_2 = 1 then
+        if risc_except_1 = 1 then
                 report "Simulated program successfuly" severity failure;
         end if;  
         

@@ -15,6 +15,7 @@ entity hazard_unit is
            is_instr_exception_e, is_instr_exception_m: in STD_LOGIC;
            is_instr_exception_w, trap_caught : in STD_LOGIC;
            trap_jump_address : in STD_LOGIC_VECTOR(31 downto 0);
+           take_interrupt_e, take_interrupt_w : in STD_LOGIC;
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
            stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
            flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
@@ -26,6 +27,7 @@ architecture Behavioral of hazard_unit is
     signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
     signal csr_pending : std_logic;
     signal jump_instr, pending_exception_f : std_logic;
+    signal pending_exception_e : std_logic;
 begin
     
     -- do not jump if jump instruction is invalid
@@ -135,18 +137,36 @@ begin
         
     end process;
     
+    process(clk)
+    begin
+        
+        if rising_edge(clk) then
+        
+            if reset then
+                pending_exception_e <= '0';
+            elsif take_interrupt_e then
+                pending_exception_e <= '1';
+            elsif take_interrupt_w then
+                pending_exception_e <= '0';
+            end if;
+        
+        end if;
+        
+    end process;
+    
     raw_instr_mem_handshake <= instruction_ack and instruction_valid;    
     instr_mem_handshake <= raw_instr_mem_handshake and (not ignore_instr_mem_handshake);
     waiting_on_instruction <= (not instr_mem_handshake) and instruction_valid;
     
-    stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending or pending_exception_f;
+    stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending or 
+               pending_exception_f or pending_exception_e;
     stall_d <= lw_stall_d or stall_e or csr_pending;
     stall_e <= stall_m;
     stall_m <= load_store_m and (not data_ack);
     
     flush_d <= jump_instr or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d) or 
-               (load_misaligned_m or store_misaligned_m);
-    flush_e <= lw_stall_d or jump_instr or csr_pending or (load_misaligned_m or store_misaligned_m);
+               (load_misaligned_m or store_misaligned_m) or pending_exception_e;
+    flush_e <= lw_stall_d or jump_instr or csr_pending or (load_misaligned_m or store_misaligned_m) or pending_exception_e;
     flush_m <= (load_misaligned_m or store_misaligned_m);
     flush_w <= '0'; --stall_m;
 

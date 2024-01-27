@@ -5,6 +5,10 @@ entity processor is
     Port ( wb_clk : in STD_LOGIC;
            wb_reset : in STD_LOGIC;
            
+           --Interrupts
+           interrupt_external : in STD_LOGIC;
+           interrupt_timer : in STD_LOGIC;
+           
            -- Instruction Wishbone Port
            instr_wb_adr : out STD_LOGIC_VECTOR(31 downto 0);
            instr_wb_data : in STD_LOGIC_VECTOR(31 downto 0);
@@ -27,6 +31,11 @@ architecture Behavioral of processor is
     component core_riscv is
     Port ( clk : in STD_LOGIC;
            reset : in STD_LOGIC;
+           
+           --Interrupts
+           interrupt_external : in STD_LOGIC;
+           interrupt_timer : in STD_LOGIC;
+           
            -- Instruction Wishbone Port
            instr_adr : out STD_LOGIC_VECTOR(31 downto 0);
            instr_data : in STD_LOGIC_VECTOR(31 downto 0);
@@ -62,6 +71,9 @@ begin
     riscv: core_riscv port map(
         clk => wb_clk, 
         reset => wb_reset,
+        
+        interrupt_external => interrupt_external,
+        interrupt_timer => interrupt_timer,
          
         instr_adr => instr_adr, 
         instr_data => instr_data,

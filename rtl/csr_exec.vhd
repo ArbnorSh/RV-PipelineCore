@@ -21,7 +21,10 @@ entity csr_exec is
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
            illegal_instruction, instr_addr_misaligned : in STD_LOGIC;
            load_misaligned, store_misaligned : in STD_LOGIC;
-           instr_except_pc : std_logic_vector(31 downto 0);
+           instr_except_pc : in std_logic_vector(31 downto 0);
+           interrupt_external, interrupt_timer : in STD_LOGIC;
+           interrupt_external_w, interrupt_timer_w : in STD_LOGIC;
+           interrupt_external_e, interrupt_timer_e : out STD_LOGIC;
            out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
            out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
            out_mepc : out STD_LOGIC_VECTOR(31 downto 0);
@@ -30,6 +33,14 @@ entity csr_exec is
 end csr_exec;
 
 architecture Behavioral of csr_exec is
+    
+    component edge_detector is
+        Port ( clk : in STD_LOGIC;
+               reset : in STD_LOGIC;
+               d : in STD_LOGIC;
+               edge_detected : out STD_LOGIC);
+    end component;
+
     signal read_csr : std_logic_vector(31 downto 0);
     
     signal csr_cycle : std_logic_vector(63 downto 0) := (others => '0');
@@ -69,14 +80,36 @@ architecture Behavioral of csr_exec is
     -- Exceptions
     signal is_exception : std_logic;
     signal mtrap_cause : std_logic_vector(3 downto 0);
+    signal intr_ext_async, intr_timer_async : std_logic;
+    signal intr_sources_async, out_of_edge_detector : std_logic_vector(1 downto 0);
+    
 begin
-
+    
+            -- Interupt logic
+    GEN_EDGE_DETECT : for i in 0 to 1 generate
+ 
+        interrupt_edge: edge_detector port map(
+            clk => clk,
+            reset => reset,
+            d => intr_sources_async(i),
+            edge_detected => out_of_edge_detector(i)
+            );
+ 
+    end generate;
+    
+    (interrupt_external_e, interrupt_timer_e) <= out_of_edge_detector;
+        
     process(all)
     begin
     
         is_exception <= csr_mstatus_mie and (instr_addr_misaligned or illegal_instruction
                                              or load_misaligned or store_misaligned);
-        trap_caught <= is_exception;
+                                             
+        intr_ext_async   <= csr_mstatus_mie and csr_meie and interrupt_external; 
+        intr_timer_async <= csr_mstatus_mie and csr_mtie and interrupt_timer;
+        intr_sources_async <= intr_ext_async & intr_timer_async;
+        
+        trap_caught <= is_exception or interrupt_external_w or interrupt_timer_w;
         
         if is_exception = '1' then
             if instr_addr_misaligned = '1' then 
@@ -87,6 +120,12 @@ begin
                 mtrap_cause <= 4D"04";
             elsif store_misaligned = '1' then
                 mtrap_cause <= 4D"06";
+            end if;
+        else
+            if interrupt_external_w = '1' then
+                mtrap_cause <= 4D"11";
+            elsif interrupt_timer_w = '1' then
+                mtrap_cause <= 4D"07";
             end if;
         end if;
         
@@ -186,8 +225,13 @@ begin
                 csr_mtip <= '0';
                 csr_msip <= '0';
             else
-                -- Handle incoming interrupts
-                -- TODO
+                if interrupt_external_w = '1' then 
+                    csr_meip <= '1';
+                end if;
+                
+                if interrupt_timer_w = '1' then 
+                    csr_mtip <= '1';
+                end if;                
                  
                 if (csr_address_write = CSR_MIP_ADDR) and (write_enable = '1') then
                     csr_meip <= write_value(11);
