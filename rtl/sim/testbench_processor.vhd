@@ -34,6 +34,11 @@ architecture Behavioral of testbench_processor is
     end component;
     
     component instruction_memory_wb is
+        generic(
+        GEN_FROM_HEX_FILE: std_logic := '0';
+        -- power of two
+        SIZE_MEM    : natural := 1024
+        );
         Port ( wb_clk : in STD_LOGIC;
                wb_rst : in STD_LOGIC;
                wb_adr : in STD_LOGIC_VECTOR (31 downto 0);
@@ -43,6 +48,10 @@ architecture Behavioral of testbench_processor is
     end component;
     
     component data_memory_wb is
+        generic(
+        -- power of two
+        SIZE_MEM    : natural := 1024
+        );
         Port ( wb_clk : in STD_LOGIC;
                wb_rst : in STD_LOGIC;
                wb_adr : in STD_LOGIC_VECTOR (31 downto 0);
@@ -94,7 +103,10 @@ begin
         
         );
     
-    instr_mem: instruction_memory_wb port map(
+    instr_mem: instruction_memory_wb generic map(
+        SIZE_MEM => 8 * 1024
+    )
+    port map(
         wb_clk => clk,
         wb_rst => reset,
         
@@ -104,7 +116,10 @@ begin
         wb_ack => instr_wb_ack        
         );
         
-    d_mem: data_memory_wb port map(
+    d_mem: data_memory_wb generic map(
+        SIZE_MEM => 8 * 1024
+    )
+    port map(
         wb_clk => clk,
         wb_rst => reset,
         

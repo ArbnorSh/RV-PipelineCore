@@ -4,7 +4,15 @@ use STD.TEXTIO.all;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
 
+library xil_defaultlib;
+use xil_defaultlib.executable_image.all;
+
 entity instruction_memory_wb is
+    generic(
+    GEN_FROM_HEX_FILE: std_logic := '0';
+    -- power of two
+    SIZE_MEM    : natural := 1024
+    );
     Port ( wb_clk : in STD_LOGIC;
            wb_rst : in STD_LOGIC;
            wb_adr : in STD_LOGIC_VECTOR (31 downto 0);
@@ -14,7 +22,7 @@ entity instruction_memory_wb is
 end instruction_memory_wb;
 
 architecture Behavioral of instruction_memory_wb is
-    type instr_mem_t is array(127 downto 0) of std_logic_vector(31 downto 0);
+    type instr_mem_t is array(0 to SIZE_MEM/4-1) of std_logic_vector(31 downto 0);
     
     impure function init_ram_hex return instr_mem_t is
         file text_file: text open read_mode is "interrupt_test_01.mem";
@@ -38,8 +46,19 @@ architecture Behavioral of instruction_memory_wb is
             
             return ram_content;
         end function;
+   
+   impure function init_ram return instr_mem_t is
+        variable ram_content: instr_mem_t;
+      begin
+        ram_content := (others => (others => '0'));
+        for i in 0 to exe_init_image'length-1 loop -- initialize only in range of source data array
+          ram_content(i) := exe_init_image(i);
+        end loop;
+        return ram_content;
+
+   end function;
         
-    signal instr_mem: instr_mem_t := init_ram_hex;
+    signal instr_mem: instr_mem_t := init_ram;
     signal read_address : std_logic_vector(29 downto 0);
 begin
     
