@@ -1,0 +1,40 @@
+--Mdir .
+--cc
+-LDFLAGS -lwebsockets
+
++incdir+../../rtl/soc/uart
+-CFLAGS -I../../rtl/soc/uart
++incdir+../../rtl/soc/gpio
+-CFLAGS -I../../rtl/soc/gpio
++incdir+../../rtl/soc/wb_intercon
+-CFLAGS -I../../rtl/soc/wb_intercon
+
+../../rtl/soc/uart/raminfr.v
+../../rtl/soc/uart/uart_receiver.v
+../../rtl/soc/uart/uart_regs.v
+../../rtl/soc/uart/uart_rfifo.v
+../../rtl/soc/uart/uart_sync_flops.v
+../../rtl/soc/uart/uart_tfifo.v
+../../rtl/soc/uart/uart_top.v
+../../rtl/soc/uart/uart_transmitter.v
+../../rtl/soc/uart/uart_wb.v
+
+../../rtl/soc/wb_intercon/wb_mux.v
+../../rtl/soc/wb_intercon/wb_intercon.v
+
+../../rtl/soc/rv_soc.v
+../../rtl/soc/sim/rv_soc_sim.v
+
+../../rtl/soc/gpio/gpio_top.v
+
+./verilog/processor.v
+./verilog/mem/rom_wb.v
+./verilog/mem/ram_wb.v
+
+--top-module rvsocsim
+--exe
+
+./tb.cpp
+./vidbo.c
+
+-DSIM=1

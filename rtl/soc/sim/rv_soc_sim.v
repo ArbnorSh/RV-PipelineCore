@@ -1,4 +1,4 @@
-module top_soc(
+module rv_soc_sim(
     input wire clk,
     input wire reset,
     input wire [15:0] i_sw,
