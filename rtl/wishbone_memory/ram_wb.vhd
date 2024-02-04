@@ -5,7 +5,7 @@ use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 
-entity data_memory_wb is
+entity ram_wb is
     generic(
     -- power of two
     SIZE_MEM    : natural := 1024
@@ -19,9 +19,9 @@ entity data_memory_wb is
            wb_sel : in  STD_LOGIC_VECTOR(3 downto 0);
            wb_stb : in STD_LOGIC;
            wb_ack : out STD_LOGIC);
-end data_memory_wb;
+end ram_wb;
 
-architecture Behavioral of data_memory_wb is
+architecture Behavioral of ram_wb is
     type mem_array is array (natural range <>) of std_logic_vector(31 downto 0);
     signal mem : mem_array(0 to SIZE_MEM/4-1);
     

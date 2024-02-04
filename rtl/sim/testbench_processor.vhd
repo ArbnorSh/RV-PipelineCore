@@ -33,7 +33,7 @@ architecture Behavioral of testbench_processor is
                d_wb_ack : in STD_LOGIC);
     end component;
     
-    component instruction_memory_wb is
+    component rom_wb is
         generic(
         GEN_FROM_HEX_FILE: std_logic := '0';
         -- power of two
@@ -47,7 +47,7 @@ architecture Behavioral of testbench_processor is
                wb_ack : out STD_LOGIC);
     end component;
     
-    component data_memory_wb is
+    component ram_wb is
         generic(
         -- power of two
         SIZE_MEM    : natural := 1024
@@ -103,7 +103,7 @@ begin
         
         );
     
-    instr_mem: instruction_memory_wb generic map(
+    instr_mem: rom_wb generic map(
         SIZE_MEM => 8 * 1024
     )
     port map(
@@ -116,7 +116,7 @@ begin
         wb_ack => instr_wb_ack        
         );
         
-    d_mem: data_memory_wb generic map(
+    d_mem: ram_wb generic map(
         SIZE_MEM => 8 * 1024
     )
     port map(
