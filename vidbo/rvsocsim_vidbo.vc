@@ -28,8 +28,8 @@
 ../../rtl/soc/gpio/gpio_top.v
 
 ./verilog/processor.v
-./verilog/mem/rom_wb.v
-./verilog/mem/ram_wb.v
+./verilog/rom_wb.v
+./verilog/ram_wb.v
 
 --top-module rvsocsim
 --exe

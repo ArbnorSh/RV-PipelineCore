@@ -1,3 +1,5 @@
+PATH_TO_CONVERT_SCRIPT ?= ../scripts/convert_to_verilog.sh
+
 TOP_MODULE = rvsocsim
 VERILATOR_VC_FILE = rvsocsim_vidbo.vc
 VERILATOR_OPTIONS = -Wall
@@ -8,6 +10,8 @@ V$(TOP_MODULE): V$(TOP_MODULE).mk
 
 # Generate the Makefile
 V$(TOP_MODULE).mk:
+	@echo "Generating the verilog source"
+	@"${PATH_TO_CONVERT_SCRIPT}"
 	$(VERILATOR) -f $(VERILATOR_VC_FILE) $(VERILATOR_OPTIONS)
 
 .PHONY : clean
