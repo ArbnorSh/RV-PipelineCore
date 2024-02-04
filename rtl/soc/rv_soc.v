@@ -53,7 +53,7 @@ module rv_soc(
     
     assign wb_rom_we = 0;
     
-    instruction_memory_wb imem_wb(
+    rom_wb rom(
         .wb_clk (wb_clk),
         .wb_rst (wb_rst),
         
@@ -63,7 +63,7 @@ module rv_soc(
         .wb_ack (wb_rom_ack)
     );
     
-    data_memory_wb dmem_wb(
+    ram_wb ram(
         .wb_clk (wb_clk),
         .wb_rst (wb_rst),
         
