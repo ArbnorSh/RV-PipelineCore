@@ -1,7 +1,6 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
 
-/* MEMORY LAYOUT */
 MEMORY
 {
     ROM (rx) : ORIGIN = 0x00000000, LENGTH = 8K
@@ -10,14 +9,10 @@ MEMORY
 
 SECTIONS
 {
-    /* ==== ROM ==== */
     .text : 
     { 
-        /*  ----- Initialization Code ----- */
         *(.text.init)
 
-        /* ----- Code ----- */
-        /* Load all text sections (from all files) */
         *(.text)
         *(.text.*)
         
@@ -26,20 +21,13 @@ SECTIONS
         _etext = .;
     } > ROM
 
-
-
-    /* ==== RAM ==== */
-    /* The .data section contains static variables which have an initial value at boot. */
     .data :
     {
-        /* ----- Read Only Data ----- */
         *(.rodata)
         *(.rodata.*)
         
         . = ALIGN(4);
         
-        
-        /* ----- Initialized Data ----- */
         _sdata = .;
         
         *(.data)
@@ -48,10 +36,10 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;
 
-
-        /* ----- Static Data ----- */
         . = ALIGN(16);
-        _global_pointer = . + 0x800;
+        /* Addresing Symbols: The 0x800 magic number allows signed 
+           12-bit offsets relaxations from _global_pointer */
+        __global_pointer = . + 0x800;
 
         *(.sdata)
         *(.sdata.*)
@@ -61,20 +49,22 @@ SECTIONS
     } > RAM
 
     
-    /* ----- Uninitialized Data ----- */
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :
-    {   _sbss = .;
+    {   
+        __bss_start = .;
         *(.bss)
         *(.bss.*)
         *(COMMON)
 
         . = ALIGN(4);
-        _ebss = .;
+        __bss_end = .;
     } > RAM
 
     _end = . ;
 }
 
-PROVIDE(_start_heap = _ebss);
-PROVIDE(_stack_pointer  = ORIGIN(RAM) + LENGTH(RAM));
+PROVIDE(__stack_top      = ORIGIN(RAM) + LENGTH(RAM));
+PROVIDE(__data_rom_start = LOADADDR(.data));
+PROVIDE(__data_start     = ADDR(.data));
+PROVIDE(__data_end       = ADDR(.data) + SIZEOF(.data));
