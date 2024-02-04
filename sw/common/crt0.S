@@ -40,9 +40,6 @@ clear_bss:
 end_clear_bss:
 
 main_entry:
-    // Init stack and global pointers
-    la sp, stack_pointer
-    la gp, global_pointer
 
     mv a0, zero
     mv a1, zero
@@ -55,12 +52,12 @@ main_exit:
 
 // ==========================================
 // Constants
-stack_pointer:  .word __stack_top
-global_pointer: .word __global_pointer
-data_start_vma: .word __data_start
-data_end_vma:   .word __data_end  
-data_start_lma: .word __data_rom_start
-bss_start:      .word __bss_start
-bss_end:        .word __bss_end
+.equ stack_pointer,     __stack_top
+.equ global_pointer,    __global_pointer$
+.equ data_start_vma,    __data_start
+.equ data_end_vma,      __data_end  
+.equ data_start_lma,    __data_rom_start
+.equ bss_start,         __bss_start
+.equ bss_end,           __bss_end
 
 .end

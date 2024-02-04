@@ -39,14 +39,14 @@ SECTIONS
         . = ALIGN(16);
         /* Addresing Symbols: The 0x800 magic number allows signed 
            12-bit offsets relaxations from _global_pointer */
-        __global_pointer = . + 0x800;
+        __global_pointer$ = . + 0x800;
 
         *(.sdata)
         *(.sdata.*)
         *(.srodata.*)
         
         . = ALIGN(4);
-    } > RAM
+    } > RAM AT > ROM
 
     
     /* .bss section which is used for uninitialized data */
@@ -68,3 +68,5 @@ PROVIDE(__stack_top      = ORIGIN(RAM) + LENGTH(RAM));
 PROVIDE(__data_rom_start = LOADADDR(.data));
 PROVIDE(__data_start     = ADDR(.data));
 PROVIDE(__data_end       = ADDR(.data) + SIZEOF(.data));
+PROVIDE(__bss_start      = __BSS_START__);
+PROVIDE(__bss_end        = __BSS_END__);

@@ -107,12 +107,14 @@ int main(int argc, char **argv, char **env) {
       }
     }
 
+#if 0
     /* Write character to UART */
     if (!(check_vidbo % 1000000)) {
       vidbo_send(&vidbo_context, main_time, "serial", "uart", serstr[sidx++]);
       if (serstr[sidx] == 0)
 	sidx = 0;
     }
+#endif
 
     top->i_clk = !top->i_clk;
     main_time+=10;

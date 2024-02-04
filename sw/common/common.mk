@@ -36,7 +36,7 @@ STARTUP_CODE := $(PROCESSOR_SW_COMMON_PATH)/crt0.S
 SRC = $(USER_SRC)
 SRC += $(STARTUP_CODE)
 
-OBJECTS = $(USER_SRC:%=%.o)
+OBJECTS = $(SRC:%=%.o)
 
 ######################################################################################
 

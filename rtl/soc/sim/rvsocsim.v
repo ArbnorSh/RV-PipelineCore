@@ -13,8 +13,8 @@ module rvsocsim(
 
     rv_soc top(
         .clk (i_clk),
-        .reset (reset),
-        .i_data (i_reset),
+        .reset (i_reset),
+        .i_data (i_sw),
         .o_data (gpio_out),
         .uart_tx (uart_tx)
     );
