@@ -18,7 +18,7 @@
 
 #include "vidbo.h"
 
-#include "Vtop.h"
+#include "Vrvsocsim.h"
 
 using namespace std;
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv, char **env) {
 	
   Verilated::commandArgs(argc, argv);
 
-  Vtop* top = new Vtop;
+  Vrvsocsim* top = new Vrvsocsim;
 
   signal(SIGINT, INThandler);
 
