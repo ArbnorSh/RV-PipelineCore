@@ -100,13 +100,13 @@
 //
 // Default is 16.
 //
-`define GPIO_IOS 31
+`define GPIO_IOS 32
 
 //depending on number of GPIO_IOS, define this...
 // for example: if there is 26 GPIO_IOS, define GPIO_LINES26
 //
 
-`define GPIO_LINES31
+`define GPIO_LINES32
 
 //
 // Undefine this one if you don't want to remove GPIO block from your design
