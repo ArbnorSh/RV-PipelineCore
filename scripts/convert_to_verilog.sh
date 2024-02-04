@@ -3,6 +3,7 @@ PATH_TO_RTL=../rtl
 PATH_TO_VERILOG_FOLDER=../vidbo/verilog
 
 mkdir -p build
+mkdir -p verilog
 
 ghdl -i --std=08 --work=processor --workdir=build -Pbuild -fsynopsys \
   "$PATH_TO_RTL"/core/*.vhd \

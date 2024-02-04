@@ -1,21 +1,20 @@
-module rv_soc_sim(
-    input wire clk,
-    input wire reset,
+module rvsocsim(
+    input wire i_clk,
+    input wire i_reset,
     input wire [15:0] i_sw,
     output wire [15:0] o_led,
-    output wire tf_push,
     output wire [7:0] uart_tx
     );
 
     wire [15:0]  gpio_out;
-    always @(posedge clk) begin
+    always @(posedge i_clk) begin
        o_led[15:0] <= gpio_out[15:0];
     end
 
     rv_soc top(
-        .clk (clk),
+        .clk (i_clk),
         .reset (reset),
-        .i_data (i_sw),
+        .i_data (i_reset),
         .o_data (gpio_out),
         .uart_tx (uart_tx)
     );

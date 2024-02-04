@@ -2,7 +2,7 @@ PATH_TO_CONVERT_SCRIPT ?= ../scripts/convert_to_verilog.sh
 
 TOP_MODULE = rvsocsim
 VERILATOR_VC_FILE = rvsocsim_vidbo.vc
-VERILATOR_OPTIONS = -Wall
+VERILATOR=verilator
 
 # Generate the executable
 V$(TOP_MODULE): V$(TOP_MODULE).mk
@@ -12,7 +12,7 @@ V$(TOP_MODULE): V$(TOP_MODULE).mk
 V$(TOP_MODULE).mk:
 	@echo "Generating the verilog source"
 	@"${PATH_TO_CONVERT_SCRIPT}"
-	$(VERILATOR) -f $(VERILATOR_VC_FILE) $(VERILATOR_OPTIONS)
+	$(VERILATOR) -f $(VERILATOR_VC_FILE) -Wno-fatal
 
 .PHONY : clean
 clean :
