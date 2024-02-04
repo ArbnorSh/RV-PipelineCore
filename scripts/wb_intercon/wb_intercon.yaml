@@ -1,0 +1,23 @@
+files_root: . 
+vlnv: ::wb_intercon:0 
+parameters:
+  endian: little
+  masters:
+    ibus:
+      slaves : [rom] 
+    dbus: 
+      slaves : [ram, gpio, uart] 
+
+  slaves: 
+    rom: 
+      offset : 0x00000000 
+      size : 0x00002000
+    ram: 
+      offset : 0x80000000 
+      size : 0x00002000 
+    gpio: 
+      offset : 0x80004000 
+      size : 0x00000040 
+    uart: 
+      offset : 0x80005000 
+      size : 0x00001000
