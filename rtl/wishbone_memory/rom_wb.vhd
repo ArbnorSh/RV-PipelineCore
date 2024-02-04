@@ -4,8 +4,8 @@ use STD.TEXTIO.all;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
 
-library xil_defaultlib;
-use xil_defaultlib.executable_image.all;
+library work;
+use work.executable_image.all;
 
 entity rom_wb is
     generic(
