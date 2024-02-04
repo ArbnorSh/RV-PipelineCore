@@ -15,10 +15,10 @@ architecture Behavioral of floprc is
 
 begin
 
-  process (clk, reset)
+  process (clk)
   begin
     
-    if rising_edge(clk) or rising_edge(reset) then
+    if rising_edge(clk) then
       if reset = '1' then
         q <= (others => '0');
       else
