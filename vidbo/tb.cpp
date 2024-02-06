@@ -73,10 +73,14 @@ int main(int argc, char **argv, char **env) {
   int check_vidbo = 0;
 
   top->i_clk = 1;
+  top->i_reset = 1;
   int last_leds = top->o_led;
   int sidx = 0;
   const char *serstr = "UART my lucky start\n";
   while (!(done || Verilated::gotFinish())) {
+    if (main_time == 100) {
+      top->i_reset = 0;
+    }
 
     top->eval();
 

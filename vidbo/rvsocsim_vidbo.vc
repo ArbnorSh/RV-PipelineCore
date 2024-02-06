@@ -21,6 +21,8 @@
 
 ../rtl/soc/wb_intercon/wb_mux.v
 ../rtl/soc/wb_intercon/wb_intercon.v
+../rtl/soc/wb_intercon/wb_arbiter.v
+../rtl/soc/wb_intercon/arbiter.v
 
 ../rtl/soc/rv_soc.v
 ../rtl/soc/sim/rvsocsim.v

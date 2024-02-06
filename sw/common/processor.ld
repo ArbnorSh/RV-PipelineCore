@@ -46,7 +46,7 @@ SECTIONS
         *(.srodata.*)
         
         . = ALIGN(4);
-    } > RAM AT > ROM
+    } >RAM AT>ROM
 
     
     /* .bss section which is used for uninitialized data */
