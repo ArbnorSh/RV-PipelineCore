@@ -9,9 +9,13 @@
 #define READ_REG(addr) (*(volatile unsigned int *)addr)
 #define WRITE_REG(addr, value) { (*((volatile unsigned int *) (addr)) = (value)); }
 
+// Proves that .data section is
+// properly initialized from startup code
+int g_var = ENABLE_GPIOs;
+
 int main(void)
 {
-    WRITE_REG(RGPIO_OE, ENABLE_GPIOs);
+    WRITE_REG(RGPIO_OE, g_var);
 
     while (1) { 
         WRITE_REG(RGPIO_OUT, READ_REG(RGPIO_IN));
