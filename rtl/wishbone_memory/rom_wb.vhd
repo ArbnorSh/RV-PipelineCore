@@ -3,6 +3,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use STD.TEXTIO.all;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
+use ieee.math_real.all;
 
 library work;
 use work.executable_image.all;
@@ -60,10 +61,11 @@ architecture Behavioral of rom_wb is
    end function;
         
     signal rom: rom_mem_t := init_rom;
-    signal read_address : std_logic_vector(29 downto 0);
+    constant ADDRESS_WIDTH : positive := positive(ceil(log2(real(SIZE_MEM))));
+    signal read_address : std_logic_vector(ADDRESS_WIDTH - 3 downto 0);
 begin
     
-    read_address <= wb_adr(31 downto 2);
+    read_address <= wb_adr(ADDRESS_WIDTH - 1 downto 2);
     
     -- ACK Logic 
     process(wb_clk) begin
