@@ -4,8 +4,9 @@ use STD.TEXTIO.all;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
-entity data_memory_wb is
+entity ram_wb is
     generic(
     -- power of two
     SIZE_MEM    : natural := 1024
@@ -19,20 +20,22 @@ entity data_memory_wb is
            wb_sel : in  STD_LOGIC_VECTOR(3 downto 0);
            wb_stb : in STD_LOGIC;
            wb_ack : out STD_LOGIC);
-end data_memory_wb;
+end ram_wb;
 
-architecture Behavioral of data_memory_wb is
+architecture Behavioral of ram_wb is
     type mem_array is array (natural range <>) of std_logic_vector(31 downto 0);
     signal mem : mem_array(0 to SIZE_MEM/4-1);
     
-    signal address: std_logic_vector(29 downto 0);
+    constant ADDRESS_WIDTH : positive := positive(ceil(log2(real(SIZE_MEM))));
+
+    signal address: std_logic_vector(ADDRESS_WIDTH - 3 downto 0);
     signal write_enable : std_logic_vector(3 downto 0);
     
     signal error : std_logic;
 begin
 
     write_enable <= ( 3 downto 0 => wb_we and wb_stb) and wb_sel;
-    address <= wb_adr(31 downto 2);
+    address <= wb_adr(ADDRESS_WIDTH - 1 downto 2);
     
     -- ACK Logic 
     process(wb_clk) begin

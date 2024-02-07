@@ -30,7 +30,13 @@ CFLAGS += -march=$(MARCH) -mabi=$(MABI) -Wall -ffunction-sections
 CFLAGS += -fdata-sections -nostartfiles -ffreestanding -g -Os
 
 LFLAGS := -T $(LD_SCRIPT) -Wl,--gc-sections
-OBJECTS = $(USER_SRC:%=%.o)
+
+STARTUP_CODE := $(PROCESSOR_SW_COMMON_PATH)/crt0.S
+
+SRC = $(USER_SRC)
+SRC += $(STARTUP_CODE)
+
+OBJECTS = $(SRC:%=%.o)
 
 ######################################################################################
 

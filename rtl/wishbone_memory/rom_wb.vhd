@@ -3,11 +3,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 use STD.TEXTIO.all;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
 use ieee.std_logic_textio.all;
+use ieee.math_real.all;
 
-library xil_defaultlib;
-use xil_defaultlib.executable_image.all;
+library work;
+use work.executable_image.all;
 
-entity instruction_memory_wb is
+entity rom_wb is
     generic(
     GEN_FROM_HEX_FILE: std_logic := '0';
     -- power of two
@@ -19,20 +20,20 @@ entity instruction_memory_wb is
            wb_data : out STD_LOGIC_VECTOR (31 downto 0);
            wb_stb : in STD_LOGIC;
            wb_ack : out STD_LOGIC);
-end instruction_memory_wb;
+end rom_wb;
 
-architecture Behavioral of instruction_memory_wb is
-    type instr_mem_t is array(0 to SIZE_MEM/4-1) of std_logic_vector(31 downto 0);
+architecture Behavioral of rom_wb is
+    type rom_mem_t is array(0 to SIZE_MEM/4-1) of std_logic_vector(31 downto 0);
     
-    impure function init_ram_hex return instr_mem_t is
+    impure function init_rom_hex return rom_mem_t is
         file text_file: text open read_mode is "interrupt_test_01.mem";
         variable text_line: line;
-        variable ram_content: instr_mem_t;
+        variable rom_content: rom_mem_t;
         variable i, j: integer := 0;
         
         begin
             for i in 0 to 127 loop
-                ram_content(i) := (others => '0');
+                rom_content(i) := (others => '0');
             end loop;
             
             while_loop: while not endfile(text_file) loop
@@ -40,29 +41,31 @@ architecture Behavioral of instruction_memory_wb is
                 if text_line(1) = '#' then
                     next while_loop;
                 end if;
-                hread(text_line, ram_content(j));
+                hread(text_line, rom_content(j));
                 j := j + 1;
             end loop;
             
-            return ram_content;
+            return rom_content;
         end function;
    
-   impure function init_ram return instr_mem_t is
-        variable ram_content: instr_mem_t;
+   impure function init_rom return rom_mem_t is
+        variable rom_content: rom_mem_t;
       begin
-        ram_content := (others => (others => '0'));
-        for i in 0 to exe_init_image'length-1 loop -- initialize only in range of source data array
-          ram_content(i) := exe_init_image(i);
+        rom_content := (others => (others => '0'));
+        -- initialize only in range of source data array
+        for i in 0 to exe_init_image'length-1 loop
+          rom_content(i) := exe_init_image(i);
         end loop;
-        return ram_content;
+        return rom_content;
 
    end function;
         
-    signal instr_mem: instr_mem_t := init_ram;
-    signal read_address : std_logic_vector(29 downto 0);
+    signal rom: rom_mem_t := init_rom;
+    constant ADDRESS_WIDTH : positive := positive(ceil(log2(real(SIZE_MEM))));
+    signal read_address : std_logic_vector(ADDRESS_WIDTH - 3 downto 0);
 begin
     
-    read_address <= wb_adr(31 downto 2);
+    read_address <= wb_adr(ADDRESS_WIDTH - 1 downto 2);
     
     -- ACK Logic 
     process(wb_clk) begin
@@ -84,7 +87,7 @@ begin
     
         if rising_edge(wb_clk) then
         
-            wb_data <= instr_mem(to_integer(read_address));
+            wb_data <= rom(to_integer(read_address));
             
         end if;
         
