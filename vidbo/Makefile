@@ -12,7 +12,7 @@ V$(TOP_MODULE): V$(TOP_MODULE).mk
 V$(TOP_MODULE).mk:
 	@echo "Generating the verilog source"
 	@"${PATH_TO_CONVERT_SCRIPT}"
-	$(VERILATOR) -f $(VERILATOR_VC_FILE) -Wno-fatal
+	$(VERILATOR) -f $(VERILATOR_VC_FILE) -Wno-fatal --trace
 
 .PHONY : clean
 clean :

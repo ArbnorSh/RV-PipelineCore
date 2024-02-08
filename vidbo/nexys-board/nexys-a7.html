@@ -107,6 +107,32 @@
 	    gpio['LD'+i] = nexys.getElementById('LD'+i);
 	}
 
+	var pushButtons = nexys.querySelectorAll('.cls-1,.cls-2');
+
+	function assignPushButtonHandlers() {
+		pushButtons.forEach(function(button) {
+				button.addEventListener('click', toggleButton);
+		});
+	}
+
+	function toggleButton() {
+		const buttonId = this.id;
+		const buttonRadius = this.getAttribute('r');
+
+		console.log('Push Button ID:', buttonId);
+
+		const is_on = buttonRadius > 10;
+
+		this.setAttribute('r', is_on ? 9 : 11.34);
+
+		const s = new String(buttonId);
+
+		var msg = {gpio: {[s] : is_on}};
+
+		ws.send(JSON.stringify(msg));
+	}
+
+
 	function toggleSwitch() {
 	    const circle = this.querySelector("circle")
 	    const cy = circle.getAttribute('cy')
@@ -120,6 +146,9 @@
 
 	    ws.send(JSON.stringify(msg));
 	}
+
+	assignPushButtonHandlers();
+
     },false);
   </script>
 </html>
