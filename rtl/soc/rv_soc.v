@@ -99,7 +99,7 @@ module rv_soc(
         .ext_padoe_o   (en_gpio)
     );
 
-    wire uart_rdt[7:0];
+    wire [7:0] uart_rdt;
     assign wb_uart_rdt = {24'd0, uart_rdt};
         
    uart_top uart16550_0(

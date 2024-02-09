@@ -4,6 +4,8 @@ TOP_MODULE = rvsocsim
 VERILATOR_VC_FILE = rvsocsim_vidbo.vc
 VERILATOR=verilator
 
+VERILATOR_OPTIONS = -Wno-fatal --trace --timescale 1ns/1ns
+
 # Generate the executable
 V$(TOP_MODULE): V$(TOP_MODULE).mk
 	$(MAKE) $(MAKE_OPTIONS) -f $<
@@ -12,7 +14,7 @@ V$(TOP_MODULE): V$(TOP_MODULE).mk
 V$(TOP_MODULE).mk:
 	@echo "Generating the verilog source"
 	@"${PATH_TO_CONVERT_SCRIPT}"
-	$(VERILATOR) -f $(VERILATOR_VC_FILE) -Wno-fatal --trace
+	$(VERILATOR) -f $(VERILATOR_VC_FILE) $(VERILATOR_OPTIONS)
 
 .PHONY : clean
 clean :
