@@ -10,7 +10,8 @@ MEMORY
 SECTIONS
 {
     .text : 
-    { 
+    {
+        KEEP(*(.text.crt0));
         *(.text.init)
 
         *(.text)
