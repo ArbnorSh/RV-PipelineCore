@@ -18,6 +18,7 @@ entity ram_wb is
            wb_data_w : in STD_LOGIC_VECTOR (31 downto 0);
            wb_we : in STD_LOGIC;
            wb_sel : in  STD_LOGIC_VECTOR(3 downto 0);
+           wb_cyc : in STD_LOGIC;
            wb_stb : in STD_LOGIC;
            wb_ack : out STD_LOGIC);
 end ram_wb;
@@ -34,7 +35,7 @@ architecture Behavioral of ram_wb is
     signal error : std_logic;
 begin
 
-    write_enable <= ( 3 downto 0 => wb_we and wb_stb) and wb_sel;
+    write_enable <= ( 3 downto 0 => wb_we and wb_stb and wb_cyc) and wb_sel;
     address <= wb_adr(ADDRESS_WIDTH - 1 downto 2);
     
     -- ACK Logic 
@@ -45,7 +46,7 @@ begin
             if (wb_rst = '1') then
                 wb_ack <= '0';
             else
-                wb_ack <= wb_stb and (not wb_ack);
+                wb_ack <= wb_stb and wb_cyc and (not wb_ack);
             end if;
         
         end if;

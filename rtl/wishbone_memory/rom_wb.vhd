@@ -19,6 +19,7 @@ entity rom_wb is
            wb_adr : in STD_LOGIC_VECTOR (31 downto 0);
            wb_data : out STD_LOGIC_VECTOR (31 downto 0);
            wb_stb : in STD_LOGIC;
+           wb_cyc : in STD_LOGIC;
            wb_ack : out STD_LOGIC);
 end rom_wb;
 
@@ -60,7 +61,7 @@ architecture Behavioral of rom_wb is
 
    end function;
         
-    signal rom: rom_mem_t := init_rom;
+    constant rom: rom_mem_t := init_rom;
     constant ADDRESS_WIDTH : positive := positive(ceil(log2(real(SIZE_MEM))));
     signal read_address : std_logic_vector(ADDRESS_WIDTH - 3 downto 0);
 begin
@@ -75,7 +76,7 @@ begin
             if (wb_rst = '1') then
                 wb_ack <= '0';
             else
-                wb_ack <= wb_stb and (not wb_ack);
+                wb_ack <= wb_stb and wb_cyc and (not wb_ack);
             end if;
         
         end if;
