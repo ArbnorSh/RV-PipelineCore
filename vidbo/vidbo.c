@@ -302,3 +302,8 @@ void vidbo_destroy(vidbo_context_t *context) {
     free(input_vals);
   lws_context_destroy(context->context);
 }
+
+int is_board_connected()
+{
+  return connected;
+}

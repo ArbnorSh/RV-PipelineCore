@@ -13,4 +13,5 @@ int  vidbo_recv(vidbo_context_t *context, int *inputs);
 void vidbo_register_inputs(vidbo_context_t *context, vidbo_input * inputs, size_t count);
 void vidbo_destroy(vidbo_context_t *context);
 
+int is_board_connected();
 
