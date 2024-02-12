@@ -88,7 +88,7 @@ int main(int argc, char **argv, char **env)
     Verilated::traceEverOn(true);
     m_trace = std::make_unique<VerilatedVcdC>();
     m_top->trace(m_trace.get(), 99);
-    m_trace->open("sim_waveform_01.vcd");
+    m_trace->open("sim_waveform.vcd");
   }
 
   signal(SIGINT, INThandler);

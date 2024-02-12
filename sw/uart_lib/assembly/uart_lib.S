@@ -1,19 +1,7 @@
 .globl uart_init
 .globl uart_write_str
 
-#define UART_ADDR       0x80005000
-
-// alignment to word boundaries
-#define UART_DLAB_LSB       (4 * 0x00)
-#define UART_INTERRUPT_EN   (4 * 0x01)
-#define UART_FIFO_CTRL      (4 * 0x02)
-#define UART_LINE_CTRL      (4 * 0x03)
-#define UART_LINE_STATUS    (4 * 0x05)
-
-#define UART_DEFAULT_LINE_CTRL (0x03)
-#define UART_FIFO_CLR          (0x06)
-#define UART_FIFO_INT_TRIGGER  (0x80)
-#define UART_FIFO_TX_EMPTY     (0x20)
+#include "uart_common.h"
 
 uart_init:
     li t0, UART_ADDR
