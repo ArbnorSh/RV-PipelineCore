@@ -1,6 +1,6 @@
 -- Auto-generated from source file: uart
--- Size: 232 bytes
--- Built: Sat Feb 10 17:55:57 2024
+-- Size: 260 bytes
+-- Built: Mon Feb 12 22:06:54 2024
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -12,12 +12,12 @@ constant exe_init_image : mem32_t := (
 x"80002117",
 x"00010113",
 x"80001197",
-x"80818193",
+x"81818193",
 x"80000297",
 x"ff028293",
 x"80000317",
-x"ff830313",
-x"0d800393",
+x"00830313",
+x"0e400393",
 x"0062fc63",
 x"0003ae03",
 x"01c2a023",
@@ -25,9 +25,9 @@ x"00428293",
 x"00438393",
 x"fedff06f",
 x"80000297",
-x"fd428293",
+x"fe428293",
 x"80000317",
-x"fcc30313",
+x"fdc30313",
 x"0062f863",
 x"0002a023",
 x"00428293",
@@ -62,11 +62,18 @@ x"fadff0ef",
 x"80000517",
 x"f3850513",
 x"fcdff0ef",
+x"80000517",
+x"f3a50513",
+x"fc1ff0ef",
 x"00000063",
 x"6c6c6548",
 x"6f57206f",
 x"0d646c72",
-x"0000000a"
+x"6548000a",
+x"206f6c6c",
+x"43534952",
+x"000a0d56",
+x"00000000"
 );
 
 end executable_image;

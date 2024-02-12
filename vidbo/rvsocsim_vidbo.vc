@@ -38,6 +38,7 @@
 --exe
 
 ./tb.cpp
-./vidbo.c
+./vidbo/vidbo.c
+./uart/uart.cpp
 
 -DSIM=1
