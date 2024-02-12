@@ -1,6 +1,6 @@
 USER_SRC ?= $(wildcard ./*.c) $(wildcard ./*.s) $(wildcard ./*.cpp) $(wildcard ./*.S)
 
-USER_INC ?= -I .
+C_INC ?= -I .
 ASM_INC ?= -I .
 
 RISCV_PREFIX ?= riscv64-unknown-elf-
@@ -33,7 +33,7 @@ LFLAGS := -T $(LD_SCRIPT) -Wl,--gc-sections
 
 STARTUP_CODE := $(PROCESSOR_SW_COMMON_PATH)/crt0.S
 
-SRC = $(USER_SRC)
+SRC += $(USER_SRC)
 SRC += $(STARTUP_CODE)
 
 OBJECTS = $(SRC:%=%.o)
@@ -49,16 +49,16 @@ build: $(EXE_ELF).elf
 
 # source file into an object file
 %.s.o: %.s
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $(ASM_INC) $< -o $@
 
 %.S.o: %.S
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $(ASM_INC) $< -o $@
 
 %.c.o: %.c
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $(C_INC) $< -o $@
 
 %.cpp.o: %.cpp
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $(C_INC) $< -o $@
 
 # Final executable
 $(EXE_ELF).elf: $(OBJECTS)

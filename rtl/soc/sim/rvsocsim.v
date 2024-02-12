@@ -4,7 +4,7 @@ module rvsocsim(
     input wire [15:0] i_sw,
     input wire [4:0] i_btn,
     output wire [15:0] o_led,
-    output wire [7:0] uart_tx
+    output wire uart_tx
     );
 
     wire [15:0]  gpio_out;

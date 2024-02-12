@@ -1,4 +1,4 @@
-.section .text
+.section .text.crt0
 .balign 4
 .global _start
 

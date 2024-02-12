@@ -4,7 +4,7 @@ module rv_soc(
     input wire reset,
     input wire [31:0] i_data,
     output wire [31:0] o_data,
-    output wire [7:0] uart_tx
+    output wire uart_tx
     );
     
     wire    [31:0]  proc_instr_wb_data_w     = 32'h000000;
@@ -59,6 +59,7 @@ module rv_soc(
         
         .wb_adr (wb_rom_adr),
         .wb_data (wb_rom_rdt),
+        .wb_cyc (wb_rom_cyc),
         .wb_stb (wb_rom_stb),
         .wb_ack (wb_rom_ack)
     );
@@ -72,6 +73,7 @@ module rv_soc(
         .wb_data_w (wb_ram_dat),
         .wb_we (wb_ram_we),
         .wb_sel (wb_ram_sel),
+        .wb_cyc (wb_ram_cyc),
         .wb_stb (wb_ram_stb),
         .wb_ack (wb_ram_ack)
     );
@@ -79,7 +81,7 @@ module rv_soc(
     wire en_gpio;
     
     gpio_top gpio_module(
-        .wb_clk_i     (clk), 
+        .wb_clk_i     (wb_clk),
         .wb_rst_i     (wb_rst),
         
         .wb_cyc_i     (wb_gpio_cyc), 
@@ -98,18 +100,21 @@ module rv_soc(
 
         .ext_padoe_o   (en_gpio)
     );
+
+    wire [7:0] uart_rdt;
+    assign wb_uart_rdt = {24'd0, uart_rdt};
         
    uart_top uart16550_0(
-      .wb_clk_i	(clk),
+      .wb_clk_i	(wb_clk),
       .wb_rst_i	(wb_rst),
       
-      .wb_adr_i	(wb_uart_adr),
-      .wb_dat_i	(wb_uart_dat),
+      .wb_adr_i	(wb_uart_adr[4:2]),
+      .wb_dat_i	(wb_uart_dat[7:0]),
       .wb_we_i	(wb_uart_we),
       .wb_cyc_i	(wb_uart_cyc),
       .wb_stb_i	(wb_uart_stb),
-      .wb_sel_i	(4'b0), // Not used in 8-bit mode
-      .wb_dat_o	(wb_uart_rdt),
+      .wb_sel_i	(4'b0),
+      .wb_dat_o	(uart_rdt),
       .wb_ack_o	(wb_uart_ack),
 
       // Outputs
