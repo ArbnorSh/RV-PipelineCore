@@ -1,6 +1,6 @@
 #include "uart.h"
 
-#ifndef DEBUG
+#ifdef DEBUG
 #define ENABLE_VERBOSE_LOG 1
 #else
 #define ENABLE_VERBOSE_LOG 0
