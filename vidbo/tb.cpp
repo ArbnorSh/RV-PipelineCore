@@ -18,10 +18,12 @@
 #include <signal.h>
 #include <memory>
 
-#include "vidbo.h"
+#include "vidbo/vidbo.h"
 #include <verilated_vcd_c.h>
 
 #include "Vrvsocsim.h"
+
+#include "uart/uart.h"
 
 using namespace std;
 
@@ -86,7 +88,7 @@ int main(int argc, char **argv, char **env)
     Verilated::traceEverOn(true);
     m_trace = std::make_unique<VerilatedVcdC>();
     m_top->trace(m_trace.get(), 99);
-    m_trace->open("sim_waveform.vcd");
+    m_trace->open("sim_waveform_01.vcd");
   }
 
   signal(SIGINT, INThandler);
@@ -96,8 +98,11 @@ int main(int argc, char **argv, char **env)
   m_top->i_clk = 1;
   m_top->i_reset = 1;
   int last_leds = m_top->o_led;
-  int sidx = 0;
-  const char *serstr = "UART my lucky start\n";
+  std::string uart_str;
+
+  constexpr int baud_rate = 115200;
+  std::unique_ptr<UartSim> m_uart = std::make_unique<UartSim>(baud_rate);
+
   while (!(done || Verilated::gotFinish())) {
     if (main_time == 100) {
       m_top->i_reset = 0;
@@ -108,6 +113,8 @@ int main(int argc, char **argv, char **env)
     if (m_trace) {
       m_trace->dump(main_time);
     }
+
+    m_uart->uart_tick(m_top->uart_tx, main_time);
 
     /* To improve performance, only poll websockets connection every 10000 sim cycles */
     check_vidbo++;
@@ -143,14 +150,19 @@ int main(int argc, char **argv, char **env)
       }
     }
 
-#if 0
     /* Write character to UART */
-    if (!(check_vidbo % 1000000)) {
-      vidbo_send(&vidbo_context, main_time, "serial", "uart", serstr[sidx++]);
-      if (serstr[sidx] == 0)
-	sidx = 0;
+    if (!(check_vidbo % 1000000) && is_board_connected()) {
+      std::string uart_string = m_uart->get_string();
+      int idx = 0;
+      std::string group_string = "uart";
+      std::string send_str;
+
+      for (const char& ch : uart_string) {
+        send_str = group_string + std::to_string(idx);
+        vidbo_send(&vidbo_context, main_time, "serial", send_str.c_str(), ch);
+        idx++;
+      }
     }
-#endif
 
     m_top->i_clk = !m_top->i_clk;
     main_time += 10;
