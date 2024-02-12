@@ -77,7 +77,16 @@
 	    }
 	    if ("serial" in json_obj) {
 		uart_area = document.getElementById("uart");
-		uart_area.value += String.fromCharCode(json_obj.serial.uart);
+		console.log(json_obj.serial);
+
+		// Loop through uart* members
+		for (const key in json_obj.serial) {
+			if (key.startsWith("uart")) {
+				console.log(`Key: ${key}, Value: ${json_obj.serial[key]}`);
+				uart_area.value += String.fromCharCode(json_obj.serial[key]);
+			}
+		}
+
 		uart_area.scrollTop = uart_area.scrollHeight;
 	    }
 	};
