@@ -4,7 +4,9 @@ module rv_soc(
     input wire reset,
     input wire [31:0] i_data,
     output wire [31:0] o_data,
-    output wire uart_tx
+    output wire uart_tx,
+    output wire [7:0] sev_seg_an,
+    output wire [6:0] sev_seg_ca
     );
     
     wire    [31:0]  proc_instr_wb_data_w     = 32'h000000;
@@ -129,6 +131,22 @@ module rv_soc(
       .dsr_pad_i (1'b0),
       .ri_pad_i  (1'b0),
       .dcd_pad_i (1'b0)
+   );
+
+   wb_sevenseg sevenseg_controller(
+    .i_wb_clk (wb_clk),
+    .i_wb_rst (wb_rst),
+
+    .i_wb_dat (wb_sevenseg_dat),
+    .i_wb_sel (wb_sevenseg_sel),
+    .i_wb_we  (wb_sevenseg_we),
+    .i_wb_cyc (wb_sevenseg_cyc),
+    .i_wb_stb (wb_sevenseg_stb),
+    .o_wb_rdt (wb_sevenseg_rdt),
+    .o_wb_ack (wb_sevenseg_ack),
+
+    .o_ca (sev_seg_ca),
+    .o_an (sev_seg_an)
    );
     
 endmodule
