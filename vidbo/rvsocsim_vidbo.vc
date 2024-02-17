@@ -30,6 +30,8 @@
 ../rtl/soc/gpio/gpio_defines.v
 ../rtl/soc/gpio/gpio_top.v
 
+../rtl/soc/sev_seg/wb_sev_seg.v
+
 ./verilog/processor.v
 ./verilog/rom_wb.v
 ./verilog/ram_wb.v
@@ -40,5 +42,6 @@
 ./tb.cpp
 ./vidbo/vidbo.c
 ./uart/uart.cpp
+./seven_segment/seven_segment.cpp
 
 -DSIM=1

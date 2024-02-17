@@ -128,6 +128,7 @@ static int ws_cb(struct lws *wsi, enum lws_callback_reasons reason,
   struct Node *temp = NULL;
   struct Node *gpio_head = NULL;
   struct Node *serial_head = NULL;
+  struct Node *seven_segment_head = NULL;
 
   int chars_written = 0;
   switch (reason) {
@@ -170,6 +171,8 @@ static int ws_cb(struct lws *wsi, enum lws_callback_reasons reason,
 	append(&gpio_head, head->time, head->group, head->item, head->value);
       } else if (!strcmp(head->group, "serial")) {
 	append(&serial_head, head->time, head->group, head->item, head->value);
+      } else if (!strcmp(head->group, "seven_segment")) {
+        append(&seven_segment_head, head->time, head->group, head->item, head->value);
       } else {
 	printf("Unknown type %s. Must be serial or gpio\n", head->group);
       }
@@ -196,6 +199,17 @@ static int ws_cb(struct lws *wsi, enum lws_callback_reasons reason,
 	chars_written += sprintf(json_buf+chars_written, "\"%s\" : %d, ", serial_head->item, serial_head->value);
 	deleteHead(&serial_head);
       }
+      chars_written += sprintf(json_buf+chars_written-2, "} ") - 2;
+    }
+
+    if (seven_segment_head) {
+      chars_written += sprintf(json_buf+chars_written, ", \"seven_segment\" : {");
+      while (seven_segment_head) {
+        chars_written += sprintf(json_buf+chars_written, "\"%s\" : %d, ", seven_segment_head->item, seven_segment_head->value);
+        deleteHead(&seven_segment_head);
+      }
+
+      /* Hack. Overwrite final comma */
       chars_written += sprintf(json_buf+chars_written-2, "} ") - 2;
     }
 

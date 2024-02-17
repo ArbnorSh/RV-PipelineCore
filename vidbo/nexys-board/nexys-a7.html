@@ -8,8 +8,12 @@
     <input type="button" id="uartClear" value="Clear UART output">
     <textarea id="uart" rows="10" cols="80" readonly>
     </textarea>
+	<div id="svg-container" style="position: relative; top: 50px; left: 50px;">
+        <svg width="400" height="85" class="digitdisplay" xmlns="http://www.w3.org/2000/svg" id="multiDigitDisplay">
+        </svg>
+    </div>
     <br /><br />
-    <object id="nexys-svg" data="nexys-a7-export.svg" type="image/svg+xml" width="80%" height="80%">
+    <object id="nexys-svg" data="nexys-a7-export.svg" type="image/svg+xml" width="50%" height="20%">
   </body>
 
   <script type="text/javascript">
@@ -89,6 +93,10 @@
 
 		uart_area.scrollTop = uart_area.scrollHeight;
 	    }
+
+		if ("seven_segment" in json_obj) {
+			setValueToDisplay(json_obj.seven_segment.value);
+		}
 	};
 
 	/* Close events. */
@@ -107,6 +115,76 @@
 	    }
 	};
     });
+
+	function createDigit(x, y, digitId) {
+		const digitGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		digitGroup.setAttribute("transform", `translate(${x},${y})`);
+
+		// Define the segment positions relative to the first segment
+		const segmentPositions = [
+			{ x: 10, y: 5, width: 30, height: 5 },   // A
+			{ x: 40, y: 10, width: 5, height: 30 },   // B
+			{ x: 40, y: 45, width: 5, height: 30 },   // C
+			{ x: 10, y: 75, width: 30, height: 5 },  // D
+			{ x: 5, y: 45, width: 5, height: 30 },   // E
+			{ x: 5, y: 10, width: 5, height: 30 },   // F
+			{ x: 10, y: 40, width: 30, height: 5 }    // G
+		];
+
+		segmentPositions.forEach((pos, i) => {
+			const segment = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			segment.setAttribute("x", pos.x);
+			segment.setAttribute("y", pos.y);
+			segment.setAttribute("width", pos.width);
+			segment.setAttribute("height", pos.height);
+			segment.setAttribute("class", "segment");
+			segment.setAttribute("rx", 4);
+			segment.setAttribute("ry", 4);
+			segment.setAttribute("id", `${digitId}_seg${String.fromCharCode(65 + i)}`);
+			digitGroup.setAttribute("id", `group_${digitId}`);
+			digitGroup.appendChild(segment);
+		});
+
+		document.getElementById("multiDigitDisplay").appendChild(digitGroup);
+    }
+
+	for (let i = 0; i < 8; i++) {
+        createDigit(i*50, 0, i+1);
+    }
+
+	function setDigitSegments(digit, value) {
+		const segmentsToActivate = {
+			0: ['A', 'B', 'C', 'D', 'E', 'F'],
+			1: ['B', 'C'],
+			2: ['A', 'B', 'D', 'E', 'G'],
+			3: ['A', 'B', 'C', 'D', 'G'],
+			4: ['B', 'C', 'F', 'G'],
+			5: ['A', 'C', 'D', 'F', 'G'],
+			6: ['A', 'C', 'D', 'E', 'F', 'G'],
+			7: ['A', 'B', 'C'],
+			8: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+			9: ['A', 'B', 'C', 'D', 'F', 'G']
+		};
+
+		// Reset all segments
+		const groupDigitElements = document.querySelectorAll(`#group_${digit} .segment`);
+		groupDigitElements.forEach(segment => segment.classList.remove('active'));
+
+		// Activate segments based on the provided value
+		segmentsToActivate[value].forEach(segmentId => {
+			const segment = document.getElementById(`${digit}_seg${segmentId}`);
+			segment.classList.add('active');
+		});
+	}
+
+	function setValueToDisplay(value) {
+		const valueStr = value.toString().padStart(8, '0');
+		
+		for (let i = 0; i < 8; i++) {
+			const digitValue = parseInt(valueStr.substr(i, 1), 10);
+			setDigitSegments(i + 1, digitValue);
+		}
+	}
 
     const nexysObject = document.getElementById('nexys-svg')
     nexysObject.addEventListener("load", function() {
@@ -160,4 +238,23 @@
 
     },false);
   </script>
+
+	<style>
+		/* Define the styling for the segments */
+		.segment {
+			fill: #622525;
+		}
+
+		.active {
+			fill: #f00; /* Change the color for active segments */
+		}
+
+		.digitdisplay
+		{
+			background: #000;
+			border:1px solid #808080;
+			border-radius: 4px 4px 4px 4px;
+		}
+	</style>
+
 </html>

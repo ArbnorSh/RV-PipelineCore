@@ -6,7 +6,7 @@ parameters:
     ibus:
       slaves : [rom] 
     dbus: 
-      slaves : [rom, ram, gpio, uart] 
+      slaves : [rom, ram, gpio, uart, sevenseg] 
 
   slaves: 
     rom: 
@@ -21,3 +21,6 @@ parameters:
     uart: 
       offset : 0x80005000 
       size : 0x00001000
+    sevenseg:
+      offset : 0x80006000
+      size : 0x00000020
