@@ -17,13 +17,14 @@
 #include <stdint.h>
 #include <signal.h>
 #include <memory>
-
+#include <vector>
 #include "vidbo/vidbo.h"
 #include <verilated_vcd_c.h>
 
 #include "Vrvsocsim.h"
 
 #include "uart/uart.h"
+#include "seven_segment/seven_segment.h"
 
 using namespace std;
 
@@ -102,6 +103,7 @@ int main(int argc, char **argv, char **env)
 
   constexpr int baud_rate = 115200;
   std::unique_ptr<UartSim> m_uart = std::make_unique<UartSim>(baud_rate);
+  SevenSegment m_sev_seg{};
 
   while (!(done || Verilated::gotFinish())) {
     if (main_time == 100) {
@@ -147,6 +149,11 @@ int main(int argc, char **argv, char **env)
             m_top->i_btn |= (1 << (i - 16));
           }
         }
+      }
+
+      if (is_board_connected() && m_sev_seg.sev_seg_tick(m_top->sev_seg_an, m_top->sev_seg_ca)) {
+        uint32_t disp_number = m_sev_seg.get_display_number();
+        vidbo_send(&vidbo_context, main_time, "seven_segment", "value", disp_number);
       }
     }
 
