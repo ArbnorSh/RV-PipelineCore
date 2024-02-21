@@ -6,7 +6,7 @@ parameters:
     ibus:
       slaves : [rom] 
     dbus: 
-      slaves : [rom, ram, gpio, uart, sevenseg] 
+      slaves : [rom, ram, gpio, uart, sevenseg, ptc]
 
   slaves: 
     rom: 
@@ -24,3 +24,6 @@ parameters:
     sevenseg:
       offset : 0x80006000
       size : 0x00000020
+    ptc:
+      offset : 0x80006040
+      size : 0x000007F

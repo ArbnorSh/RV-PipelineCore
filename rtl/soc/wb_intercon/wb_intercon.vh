@@ -82,6 +82,18 @@ wire [31:0] wb_sevenseg_rdt;
 wire        wb_sevenseg_ack;
 wire        wb_sevenseg_err;
 wire        wb_sevenseg_rty;
+wire [31:0] wb_ptc_adr;
+wire [31:0] wb_ptc_dat;
+wire  [3:0] wb_ptc_sel;
+wire        wb_ptc_we;
+wire        wb_ptc_cyc;
+wire        wb_ptc_stb;
+wire  [2:0] wb_ptc_cti;
+wire  [1:0] wb_ptc_bte;
+wire [31:0] wb_ptc_rdt;
+wire        wb_ptc_ack;
+wire        wb_ptc_err;
+wire        wb_ptc_rty;
 
 wb_intercon wb_intercon0
    (.wb_clk_i          (wb_clk),
@@ -169,5 +181,17 @@ wb_intercon wb_intercon0
     .wb_sevenseg_rdt_i (wb_sevenseg_rdt),
     .wb_sevenseg_ack_i (wb_sevenseg_ack),
     .wb_sevenseg_err_i (wb_sevenseg_err),
-    .wb_sevenseg_rty_i (wb_sevenseg_rty));
+    .wb_sevenseg_rty_i (wb_sevenseg_rty),
+    .wb_ptc_adr_o      (wb_ptc_adr),
+    .wb_ptc_dat_o      (wb_ptc_dat),
+    .wb_ptc_sel_o      (wb_ptc_sel),
+    .wb_ptc_we_o       (wb_ptc_we),
+    .wb_ptc_cyc_o      (wb_ptc_cyc),
+    .wb_ptc_stb_o      (wb_ptc_stb),
+    .wb_ptc_cti_o      (wb_ptc_cti),
+    .wb_ptc_bte_o      (wb_ptc_bte),
+    .wb_ptc_rdt_i      (wb_ptc_rdt),
+    .wb_ptc_ack_i      (wb_ptc_ack),
+    .wb_ptc_err_i      (wb_ptc_err),
+    .wb_ptc_rty_i      (wb_ptc_rty));
 

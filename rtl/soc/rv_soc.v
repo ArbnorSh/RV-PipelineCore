@@ -148,5 +148,27 @@ module rv_soc(
     .o_ca (sev_seg_ca),
     .o_an (sev_seg_an)
    );
+
+   ptc_top ptc(
+    .wb_clk_i (wb_clk),
+    .wb_rst_i (wb_rst),
+
+    .wb_cyc_i (wb_ptc_cyc),
+    .wb_adr_i (wb_ptc_adr),
+    .wb_dat_i (wb_ptc_dat),
+    .wb_sel_i (wb_ptc_sel),
+    .wb_we_i  (wb_ptc_we),
+    .wb_stb_i (wb_ptc_stb),
+    .wb_dat_o (wb_ptc_rdt),
+    .wb_ack_o (wb_ptc_ack),
+    .wb_err_o (wb_ptc_err),
+
+    .wb_inta_o (),
+
+    .gate_clk_pad_i (),
+    .capt_pad_i (),
+    .pwm_pad_o (),
+    .oen_padoen_o ()
+   );
     
 endmodule
