@@ -59,9 +59,6 @@
 //
 //
 
-// synopsys translate_off
-`include "timescale.v"
-// synopsys translate_on
 `include "ptc_defines.v"
 
 module ptc_top(
