@@ -8,6 +8,8 @@
 -CFLAGS -I../rtl/soc/gpio
 +incdir+../rtl/soc/wb_intercon
 -CFLAGS -I../rtl/soc/wb_intercon
++incdir+../rtl/soc/ptc
+-CFLAGS -I../rtl/soc/ptc
 
 ../rtl/soc/uart/raminfr.v
 ../rtl/soc/uart/uart_receiver.v
@@ -31,6 +33,9 @@
 ../rtl/soc/gpio/gpio_top.v
 
 ../rtl/soc/sev_seg/wb_sev_seg.v
+
+../rtl/soc/ptc/ptc_defines.v
+../rtl/soc/ptc/ptc_top.v
 
 ./verilog/processor.v
 ./verilog/rom_wb.v
