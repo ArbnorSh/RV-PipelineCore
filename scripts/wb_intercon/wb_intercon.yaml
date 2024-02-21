@@ -25,5 +25,5 @@ parameters:
       offset : 0x80006000
       size : 0x00000020
     ptc:
-      offset : 0x80006040
-      size : 0x000007F
+      offset : 0x80006200
+      size : 0x0000040

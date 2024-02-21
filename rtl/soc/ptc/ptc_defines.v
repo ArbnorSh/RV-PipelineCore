@@ -91,7 +91,7 @@
 //
 // By default it is defined.
 //
-`define PTC_FULL_DECODE
+//`define PTC_FULL_DECODE
 
 //
 // Strict 32-bit WISHBONE access
