@@ -156,7 +156,7 @@ wire			gate;		// Gate function of ptc_ecgt
 wire			pwm_rst;	// Reset of a PWM output
 reg	[dw-1:0]	wb_dat_o;	// Data out
 reg			pwm_pad_o;	// PWM output
-reg			int;		// Interrupt reg
+reg			int_r;		// Interrupt reg
 wire			int_match;	// Interrupt match
 wire			full_decoding;	// Full address decoding qualification
 
@@ -247,7 +247,7 @@ always @(posedge wb_clk_i or posedge wb_rst_i)
 	else if (rptc_ctrl_sel && wb_we_i)
 		rptc_ctrl <= #1 wb_dat_i[8:0];
 	else if (rptc_ctrl[`PTC_RPTC_CTRL_INTE])
-		rptc_ctrl[`PTC_RPTC_CTRL_INT] <= #1 rptc_ctrl[`PTC_RPTC_CTRL_INT] | int;
+		rptc_ctrl[`PTC_RPTC_CTRL_INT] <= #1 rptc_ctrl[`PTC_RPTC_CTRL_INT] | int_r;
 `else
 assign rptc_ctrl = `PTC_DEF_RPTC_CTRL;
 `endif
@@ -356,11 +356,11 @@ assign int_match = (lrc_match | hrc_match) & rptc_ctrl[`PTC_RPTC_CTRL_INTE];
 // Register interrupt request
 always @(posedge wb_rst_i or posedge wb_clk_i) // posedge int_match (instead of wb_rst_i)
 	if (wb_rst_i)
-		int <= #1 1'b0;
+		int_r <= #1 1'b0;
 	else if (int_match)
-		int <= #1 1'b1;
+		int_r <= #1 1'b1;
 	else
-		int <= #1 1'b0;
+		int_r <= #1 1'b0;
 
 //
 // Alias

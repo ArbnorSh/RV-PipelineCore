@@ -8,6 +8,8 @@
 -CFLAGS -I../rtl/soc/gpio
 +incdir+../rtl/soc/wb_intercon
 -CFLAGS -I../rtl/soc/wb_intercon
++incdir+../rtl/soc/ptc
+-CFLAGS -I../rtl/soc/ptc
 
 ../rtl/soc/uart/raminfr.v
 ../rtl/soc/uart/uart_receiver.v
