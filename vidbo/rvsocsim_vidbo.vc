@@ -32,6 +32,9 @@
 
 ../rtl/soc/sev_seg/wb_sev_seg.v
 
+../rtl/soc/ptc/ptc_defines.v
+../rtl/soc/ptc/ptc_top.v
+
 ./verilog/processor.v
 ./verilog/rom_wb.v
 ./verilog/ram_wb.v
