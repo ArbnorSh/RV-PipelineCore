@@ -1,7 +1,7 @@
 PROCESSOR_HOME ?= ../../..
 
 CSR_SOURCE    := $(PROCESSOR_HOME)/sw/csr_lib/rv_csr.c
-SRC 		  += $(UART_SOURCE)
+SRC 		  += $(CSR_SOURCE)
 
 C_INC += -I $(PROCESSOR_HOME)/sw/csr_lib/
 
