@@ -24,12 +24,14 @@ entity csr_exec is
            instr_except_pc : in std_logic_vector(31 downto 0);
            interrupt_external, interrupt_timer : in STD_LOGIC;
            interrupt_external_w, interrupt_timer_w : in STD_LOGIC;
-           interrupt_external_e, interrupt_timer_e : out STD_LOGIC;
+           interrupt_external_m, interrupt_timer_m : out STD_LOGIC;
            out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
            out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
            out_mepc : out STD_LOGIC_VECTOR(31 downto 0);
            trap_jump_addr : out STD_LOGIC_VECTOR (31 downto 0);
-           trap_caught : out std_logic := '0');
+           trap_caught : out std_logic := '0';
+           mret_instr : in std_logic;
+           pc_e : in std_logic_vector(31 downto 0));
 end csr_exec;
 
 architecture Behavioral of csr_exec is
@@ -46,7 +48,7 @@ architecture Behavioral of csr_exec is
     signal csr_cycle : std_logic_vector(63 downto 0) := (others => '0');
     signal csr_misa : std_logic_vector(31 downto 0) := (others => '0');
     signal csr_mstatus : std_logic_vector(31 downto 0) := (others => '0');
-    signal csr_mstatus_mie : std_logic;
+    signal csr_mstatus_mie, csr_mstatus_mpie : std_logic;
     signal csr_mtvec : std_logic_vector(31 downto 0) := (others => '0');
     signal csr_mtvec_base : std_logic_vector(31 downto 2);
     signal csr_mtvec_mode : std_logic_vector(1 downto 0);
@@ -82,6 +84,7 @@ architecture Behavioral of csr_exec is
     signal mtrap_cause : std_logic_vector(3 downto 0);
     signal intr_ext_async, intr_timer_async : std_logic;
     signal intr_sources_async, out_of_edge_detector : std_logic_vector(1 downto 0);
+    signal valid_pc : std_logic;
     
 begin
     
@@ -97,16 +100,24 @@ begin
  
     end generate;
     
-    (interrupt_external_e, interrupt_timer_e) <= out_of_edge_detector;
+    (interrupt_external_m, interrupt_timer_m) <= out_of_edge_detector;
         
     process(all)
     begin
     
-        is_exception <= csr_mstatus_mie and (instr_addr_misaligned or illegal_instruction
-                                             or load_misaligned or store_misaligned);
+        is_exception <= instr_addr_misaligned or illegal_instruction or 
+                        load_misaligned or store_misaligned;
+        
+        if pc_e /= 32X"0" then
+            valid_pc <= '1';
+        else
+            valid_pc <= '0';
+        end if;
                                              
-        intr_ext_async   <= csr_mstatus_mie and csr_meie and interrupt_external; 
-        intr_timer_async <= csr_mstatus_mie and csr_mtie and interrupt_timer;
+        intr_ext_async   <= csr_mstatus_mie and csr_meie and interrupt_external and 
+                            valid_pc; 
+        intr_timer_async <= csr_mstatus_mie and csr_mtie and interrupt_timer and 
+                            valid_pc;
         intr_sources_async <= intr_ext_async & intr_timer_async;
         
         trap_caught <= is_exception or interrupt_external_w or interrupt_timer_w;
@@ -169,6 +180,14 @@ begin
         if rising_edge(clk) then   
             if reset then
                 csr_mstatus_mie <= '0';
+            elsif trap_caught then
+                -- Save interrupt state
+                -- and disable interrupts
+                csr_mstatus_mpie <= csr_mstatus_mie;
+                csr_mstatus_mie  <= '0';
+            elsif mret_instr then
+                csr_mstatus_mie  <= csr_mstatus_mpie;
+                csr_mstatus_mpie <= '1';
             elsif (csr_address_write = CSR_MSTATUS_ADDR) and (write_enable = '1') then
                 csr_mstatus_mie <= write_value(3);
             end if;
