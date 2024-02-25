@@ -120,7 +120,7 @@ module rv_soc(
       .wb_ack_o	(wb_uart_ack),
 
       // Outputs
-      .int_o     (time_int),
+      .int_o     (),
       .stx_pad_o (uart_tx),
       .rts_pad_o (),
       .dtr_pad_o (),
@@ -163,7 +163,7 @@ module rv_soc(
     .wb_ack_o (wb_ptc_ack),
     .wb_err_o (wb_ptc_err),
 
-    .wb_inta_o (),
+    .wb_inta_o (time_int),
 
     .gate_clk_pad_i (),
     .capt_pad_i (),
