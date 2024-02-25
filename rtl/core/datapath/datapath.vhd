@@ -44,13 +44,11 @@ entity datapath is
            instr_addr_misaligned_w : out STD_LOGIC;
            is_instr_exception_m : out STD_LOGIC;
            is_instr_exception_e : out STD_LOGIC;
-           trap_jump_addr_w : out STD_LOGIC_VECTOR(31 downto 0);
            trap_caught_w : out STD_LOGIC;
            mret_instr_e : in STD_LOGIC;
            illegal_instruction_d, load_store_m : in STD_LOGIC; 
            is_instr_exception_w : out STD_LOGIC;
-           illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
-           take_interrupt_e, take_interrupt_w : out STD_LOGIC);
+           illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -188,12 +186,14 @@ architecture Behavioral of datapath is
                instr_except_pc : in std_logic_vector(31 downto 0);
                interrupt_external, interrupt_timer : in STD_LOGIC;
                interrupt_external_w, interrupt_timer_w : in STD_LOGIC;
-               interrupt_external_e, interrupt_timer_e : out STD_LOGIC;
+               interrupt_external_m, interrupt_timer_m : out STD_LOGIC;
                out_write_reg : out STD_LOGIC_VECTOR(31 downto 0);
                out_write_csr : out STD_LOGIC_VECTOR (31 downto 0);
                out_mepc : out STD_LOGIC_VECTOR(31 downto 0);
                trap_jump_addr : out STD_LOGIC_VECTOR (31 downto 0);
-               trap_caught : out std_logic := '0');
+               trap_caught : out std_logic := '0';
+               mret_instr : in std_logic;
+               pc_e : in std_logic_vector(31 downto 0));
     end component;
     
     signal op_d : std_logic_vector(6 downto 0);
@@ -207,8 +207,8 @@ architecture Behavioral of datapath is
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
     signal output_from_d_reg: std_logic_vector(96 downto 0);
     signal output_from_e_reg: std_logic_vector(192 downto 0);
-    signal output_from_m_reg: std_logic_vector(216 downto 0);
-    signal output_from_w_reg: std_logic_vector(215 downto 0);
+    signal output_from_m_reg: std_logic_vector(215 downto 0);
+    signal output_from_w_reg: std_logic_vector(216 downto 0);
     signal funct3_e, funct3_m : std_logic_vector(2 downto 0);
     signal pre_write_data_m : std_logic_vector(31 downto 0);
     signal data_output_from_execute : std_logic_vector(31 downto 0);
@@ -226,6 +226,8 @@ architecture Behavioral of datapath is
     signal store_misaligned_w, load_misaligned_w: std_logic;
     signal interrupt_external_e, interrupt_external_w, interrupt_timer_e, interrupt_timer_w : std_logic;
     signal interrupt_external_m, interrupt_timer_m: std_logic;
+    signal trap_jump_addr_w : std_logic_vector(31 downto 0);
+    signal mret_instr_m, mret_instr_w: std_logic;
 
 begin
 
@@ -375,8 +377,8 @@ begin
         interrupt_timer => interrupt_timer,
         interrupt_external_w => interrupt_external_w,
         interrupt_timer_w => interrupt_timer_w,
-        interrupt_external_e => interrupt_external_e,
-        interrupt_timer_e => interrupt_timer_e,
+        interrupt_external_m => interrupt_external_m,
+        interrupt_timer_m => interrupt_timer_m,
         
         csr_address_read => csr_address_e,
         csr_address_write => csr_address_w,
@@ -396,11 +398,13 @@ begin
         
         out_write_reg => out_write_reg_e,
         out_write_csr => out_write_csr_e,
-        out_mepc => out_mepc
+        out_mepc => out_mepc,
+
+        mret_instr => mret_instr_w,
+        pc_e => pc_e
         );
         
-    is_instr_exception_e <= instr_addr_misaligned_e or illegal_instruction_e or 
-                            interrupt_external_e or interrupt_timer_e;
+    is_instr_exception_e <= instr_addr_misaligned_e or illegal_instruction_e;
     
     jump_pc_target_e <= out_mepc when mret_instr_e = '1' else pc_target_e;
     
@@ -411,20 +415,20 @@ begin
         y => data_output_from_execute
         );
         
-    register_memory: flopenrc generic map(217) port map(
+    register_memory: flopenrc generic map(216) port map(
         clk => clk,
         reset => reset,
         enable => (not stall_m),
         clear => flush_m,
         d => (data_output_from_execute & write_data_e & rd_e & pc_plus4_e & pc_target_e & funct3_e 
               & csr_address_e & csr_write_e & out_write_csr_e & instr_addr_misaligned_e & pc_e
-              & illegal_instruction_e & interrupt_external_e & interrupt_timer_e),
+              & illegal_instruction_e & mret_instr_e),
         q => output_from_m_reg
         );
         
     (alu_result_m, pre_write_data_m, rd_m, pc_plus4_m, pc_target_m, funct3_m,
      csr_address_m, csr_write_m, out_write_csr_m, instr_addr_misaligned_m,
-     pc_m, illegal_instruction_m, interrupt_external_m, interrupt_timer_m) <= output_from_m_reg;
+     pc_m, illegal_instruction_m, mret_instr_m) <= output_from_m_reg;
     
     mem_s: memory_store port map(
         write_data => pre_write_data_m,
@@ -447,21 +451,21 @@ begin
     is_instr_exception_m <= instr_addr_misaligned_m or illegal_instruction_m or store_misaligned_m or load_misaligned_m or 
                             interrupt_external_m or interrupt_timer_m;
     
-    register_writeback: floprc generic map(216) port map(
+    register_writeback: floprc generic map(217) port map(
         clk => clk,
         reset => reset,
         clear => flush_w,
         d => (alu_result_m & read_data_ext_m & rd_m & pc_plus4_m & pc_target_m 
               & csr_address_m & csr_write_m & out_write_csr_m & instr_addr_misaligned_m
               & pc_m & illegal_instruction_m & store_misaligned_m & load_misaligned_m
-              & interrupt_external_m & interrupt_timer_m),
+              & interrupt_external_m & interrupt_timer_m & mret_instr_m),
         q => output_from_w_reg
         );
         
     (alu_result_w, read_data_w, rd_w, pc_plus4_w, pc_target_w, 
      csr_address_w, csr_write_w, out_write_csr_w, instr_addr_misaligned_w,
      pc_w, illegal_instruction_w, store_misaligned_w, load_misaligned_w,
-     interrupt_external_w, interrupt_timer_w) <= output_from_w_reg;
+     interrupt_external_w, interrupt_timer_w, mret_instr_w) <= output_from_w_reg;
      
      csr_instr_w <= csr_write_w;
      is_instr_exception_w <= instr_addr_misaligned_w or illegal_instruction_w or store_misaligned_w or load_misaligned_w or
