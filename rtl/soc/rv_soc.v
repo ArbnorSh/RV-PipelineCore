@@ -22,8 +22,6 @@ module rv_soc(
    assign wb_ibus_dat = proc_instr_wb_data_w;
    assign wb_ibus_sel = proc_instr_wb_sel;
    
-   assign wb_dbus_sel = proc_instr_wb_sel;
-    
    assign wb_dbus_cti = 3'b000;
    assign wb_dbus_bte = 2'b00;
    
