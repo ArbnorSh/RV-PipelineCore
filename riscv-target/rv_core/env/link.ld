@@ -1,0 +1,1 @@
+../../../sw/common/processor.ld
