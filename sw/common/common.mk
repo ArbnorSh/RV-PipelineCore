@@ -3,7 +3,7 @@ USER_SRC ?= $(wildcard ./*.c) $(wildcard ./*.s) $(wildcard ./*.cpp) $(wildcard .
 C_INC ?= -I .
 ASM_INC ?= -I .
 
-RISCV_PREFIX ?= riscv64-unknown-elf-
+RISCV_PREFIX ?= riscv32-unknown-elf-
 
 # CPU architecture and ABI
 MARCH ?= rv32i_zicsr
