@@ -1,9 +1,9 @@
 // In GPIO Inputs we have the switches (16 switches)
 // then from index 16 we have 5 push buttons
 // In GPIO Outputs we have the LEDs
-#define RGPIO_IN        0x80004000
-#define RGPIO_OUT       0x80004004
-#define RGPIO_OE        0x80004008
+#define RGPIO_IN        0x80204000
+#define RGPIO_OUT       0x80204004
+#define RGPIO_OE        0x80204008
 
 #define ENABLE_GPIOs    0xFFFF
 

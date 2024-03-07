@@ -1,8 +1,8 @@
 // From index 16 we have the 5 push buttons
-#define RGPIO_IN        0x80004000
+#define RGPIO_IN        0x80204000
 // Address to write 32 bit value to 
 // seven segment controller
-#define WRITE_DIGITS_REG        0x80006000
+#define WRITE_DIGITS_REG        0x80206000
 
 #define BTN_UP          0x01
 #define BTN_RIGHT       0x02
