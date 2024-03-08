@@ -152,14 +152,14 @@ class rv_core(pluginTemplate):
             
             # Generate hex from bin
             hex_file = 'my.hex'
-            bin_to_hex = 'python ./scripts/bin2hex.py {0}/{1} {0}/{2} -w 32'.format(test_dir, bin_file, hex_file)
+            bin_to_hex = 'python ../scripts/bin2hex.py {0}/{1} {0}/{2} -w 32'.format(test_dir, bin_file, hex_file)
             utils.shellCommand(bin_to_hex).run()
 
             # Generate and install vhdl memory
             vhd_mem_file = 'my.vhd'
-            hex_to_vhd = 'python ./scripts/hex2vhdmem.py --hex {0}/{1} --vhd {0}/{2}'.format(test_dir, hex_file, vhd_mem_file)
+            hex_to_vhd = 'python ../scripts/hex2vhdmem.py --hex {0}/{1} --vhd {0}/{2}'.format(test_dir, hex_file, vhd_mem_file)
             utils.shellCommand(hex_to_vhd).run()
-            copy_vhd = 'cp -f {0}/{1} ./rtl/wishbone_memory/executable_image.vhd'.format(test_dir, vhd_mem_file)
+            copy_vhd = 'cp -f {0}/{1} ../rtl/wishbone_memory/executable_image.vhd'.format(test_dir, vhd_mem_file)
             utils.shellCommand(copy_vhd).run()
 
             # 2 MB max memory
@@ -173,7 +173,7 @@ class rv_core(pluginTemplate):
             
             # Verilator
             logger.debug('Compiling verilator executable')
-            subprocess.run('make -C ./vidbo clean && make -C ./vidbo -j12 SIZE_MEM={}'.format(mem_size), shell=True)
+            subprocess.run('make -C ../vidbo clean && make -C ../vidbo -j12 SIZE_MEM={}'.format(mem_size), shell=True)
 
             if not self.target_run:
                 logger.debug('Exiting: Not running the test')
