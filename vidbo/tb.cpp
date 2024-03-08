@@ -129,7 +129,7 @@ int main(int argc, char **argv, char **env)
 
     /* To improve performance, only poll websockets connection every 10000 sim cycles */
     check_vidbo++;
-    if (!(check_vidbo % 10000) && is_board_connected()) {
+    if (!(check_vidbo % 10000)) {
 
       /* Send out all GPIO status
        TODO: Only send changed pins.
@@ -160,7 +160,7 @@ int main(int argc, char **argv, char **env)
         }
       }
 
-      if (m_sev_seg.sev_seg_tick(m_top->sev_seg_an, m_top->sev_seg_ca)) {
+      if (is_board_connected() && m_sev_seg.sev_seg_tick(m_top->sev_seg_an, m_top->sev_seg_ca)) {
         uint32_t disp_number = m_sev_seg.get_display_number();
         vidbo_send(&vidbo_context, main_time, "seven_segment", "value", disp_number);
       }
