@@ -60,7 +60,7 @@ begin
                 out_control <= b"1_100_1_1_0_00_0_00_0_0_-_0_0_0";
             -- jalr
             when "1100111" =>
-                out_control <= b"1_000_-_-_0_--_0_--_1_0_0_0_0_0";
+                out_control <= b"1_000_-_-_0_10_0_--_1_0_0_0_0_0";
             -- auipc
             when "0010111" =>
                 out_control <= b"1_100_-_-_0_11_0_--_0_0_1_0_0_0";
@@ -76,7 +76,9 @@ begin
                 else
                     out_control <= b"1_101_-_-_0_00_0_--_0_0_-_0_1_0";
                 end if;
-            when "0000000" =>
+            -- fence
+            -- no architecture state change
+            when "0000000" | "0001111" =>
                 out_control <= "000000000000000000";
             when others =>
                 illegal_instruction <= '1';

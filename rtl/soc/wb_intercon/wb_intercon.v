@@ -129,7 +129,7 @@ wire        wb_dbus_rom_rty;
 wb_mux
   #(.num_slaves (1),
     .MATCH_ADDR ({32'h00000000}),
-    .MATCH_MASK ({32'hffffe000}))
+    .MATCH_MASK ({32'hffe00000}))
  wb_mux_ibus
    (.wb_clk_i  (wb_clk_i),
     .wb_rst_i  (wb_rst_i),
@@ -160,8 +160,8 @@ wb_mux
 
 wb_mux
   #(.num_slaves (6),
-    .MATCH_ADDR ({32'h00000000, 32'h80000000, 32'h80004000, 32'h80005000, 32'h80006000, 32'h80006200}),
-    .MATCH_MASK ({32'hffffe000, 32'hffffe000, 32'hffffffc0, 32'hfffff000, 32'hffffffe0, 32'hffffffc0}))
+    .MATCH_ADDR ({32'h00000000, 32'h80000000, 32'h80204000, 32'h80205000, 32'h80206000, 32'h80206200}),
+    .MATCH_MASK ({32'hffe00000, 32'hffe00000, 32'hffffffc0, 32'hfffff000, 32'hffffffe0, 32'hffffffc0}))
  wb_mux_dbus
    (.wb_clk_i  (wb_clk_i),
     .wb_rst_i  (wb_rst_i),

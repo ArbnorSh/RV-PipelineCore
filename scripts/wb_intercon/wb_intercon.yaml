@@ -11,19 +11,19 @@ parameters:
   slaves: 
     rom: 
       offset : 0x00000000 
-      size : 0x00002000
+      size : 0x00200000
     ram: 
       offset : 0x80000000 
-      size : 0x00002000 
+      size : 0x00200000 
     gpio: 
-      offset : 0x80004000 
+      offset : 0x80204000 
       size : 0x00000040 
     uart: 
-      offset : 0x80005000 
+      offset : 0x80205000 
       size : 0x00001000
     sevenseg:
-      offset : 0x80006000
+      offset : 0x80206000
       size : 0x00000020
     ptc:
-      offset : 0x80006200
+      offset : 0x80206200
       size : 0x0000040

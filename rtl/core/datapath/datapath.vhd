@@ -196,17 +196,17 @@ architecture Behavioral of datapath is
                pc_e : in std_logic_vector(31 downto 0));
     end component;
     
-    signal op_d : std_logic_vector(6 downto 0);
+    signal op_d, op_e : std_logic_vector(6 downto 0);
     signal funct3_d : std_logic_vector(2 downto 0);
     signal funct7_b5_d : std_logic; 
     signal pc_next_no_excep, pc_next_f, pc_plus4_f, read_data_ext_m, pc_src_a_e: std_logic_vector(31 downto 0);
     signal pc_d, pc_plus4_d, rd1_d, rd2_d, imm_ext_d, pc_m, pc_w: std_logic_vector(31 downto 0);
     signal rd_d: std_logic_vector(4 downto 0);
-    signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e, src_a_forward_e: std_logic_vector(31 downto 0);
+    signal rd1_e, rd2_e, pc_e, imm_ext_e, src_a_e, src_b_e, src_a_forward_e, pc_target_calc_e: std_logic_vector(31 downto 0);
     signal alu_result_e, write_data_e, pc_plus4_e, pc_target_e, pc_target_w, jump_pc_target_e: std_logic_vector(31 downto 0);
     signal pc_plus4_m, alu_result_w, read_data_w, pc_plus4_w, result_w, pc_target_m: std_logic_vector(31 downto 0);
     signal output_from_d_reg: std_logic_vector(96 downto 0);
-    signal output_from_e_reg: std_logic_vector(192 downto 0);
+    signal output_from_e_reg: std_logic_vector(199 downto 0);
     signal output_from_m_reg: std_logic_vector(215 downto 0);
     signal output_from_w_reg: std_logic_vector(216 downto 0);
     signal funct3_e, funct3_m : std_logic_vector(2 downto 0);
@@ -295,20 +295,20 @@ begin
         ext_imm => imm_ext_d
         );
     
-    register_execute: flopenrc generic map(193) port map(
+    register_execute: flopenrc generic map(200) port map(
         clk => clk,
         reset => reset,
         clear => flush_e,
         enable => (not stall_e),
         d => (rd1_d & rd2_d & pc_d & rs1_d & rs2_d & rd_d & imm_ext_d & pc_plus4_d
               & funct3_d & instr_d(31 downto 20) & csr_write_d & instr_addr_misaligned_d
-              & illegal_instruction_d),
+              & illegal_instruction_d & op_d),
         q => output_from_e_reg
         );
     
     (rd1_e, rd2_e, pc_e, rs1_e, rs2_e, rd_e, imm_ext_e, pc_plus4_e,
      funct3_e, csr_address_e, csr_write_e, instr_addr_misaligned_e,
-     illegal_instruction_e) <= output_from_e_reg;
+     illegal_instruction_e, op_e) <= output_from_e_reg;
      
      csr_instr_e <= csr_write_e;
     
@@ -363,8 +363,12 @@ begin
     branch_add: adder port map(
         a => pc_src_a_e,
         b => imm_ext_e,
-        y => pc_target_e
+        y => pc_target_calc_e
         );
+    -- JALR clears the lowest bit of the calculated
+    -- jump target address
+    pc_target_e <= ( 31 downto 1 => pc_target_calc_e(31 downto 1), 0 => '0') when op_e = "1100111" else
+                  pc_target_calc_e;
     
     csr_unit: csr_exec generic map(
         VENDOR_ID => 32D"32"

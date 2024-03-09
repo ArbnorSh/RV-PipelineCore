@@ -1,10 +1,10 @@
 
-#define PTC_BASE_ADDR 0x80006200
+#define PTC_BASE_ADDR 0x80206200
 
 // from gpio spec
 // gpio output - LEDs
-#define RGPIO_OUT       0x80004004
-#define RGPIO_OE        0x80004008
+#define RGPIO_OUT       0x80204004
+#define RGPIO_OE        0x80204008
 
 #define ENABLE_GPIOs    0xFFFF
 

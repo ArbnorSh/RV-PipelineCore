@@ -46,6 +46,9 @@ void INThandler(int signal)
 int main(int argc, char **argv, char **env)
 {
   vidbo_context_t vidbo_context;
+  std::string uart_string;
+  std::string group_string = "uart";
+  std::string riscof_str;
 
   const char *const inputs[] = {
       "gpio.SW0",
@@ -74,10 +77,6 @@ int main(int argc, char **argv, char **env)
 
   int *input_vals = (int *)calloc(num_inputs, sizeof(int));
 
-  vidbo_init(&vidbo_context, 8081);
-
-  vidbo_register_inputs(&vidbo_context, inputs, num_inputs);
-
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedVcdC> m_trace;
 
@@ -90,6 +89,16 @@ int main(int argc, char **argv, char **env)
     m_trace = std::make_unique<VerilatedVcdC>();
     m_top->trace(m_trace.get(), 99);
     m_trace->open("sim_waveform.vcd");
+  }
+
+  bool riscof_mode = false;
+  const char* riscof_arg = Verilated::commandArgsPlusMatch("riscof");
+  if (std::string(riscof_arg) == "+riscof") {
+    riscof_mode = true;
+  } else {
+    // when not in riscof mode, init vidbo
+    vidbo_init(&vidbo_context, 8081);
+    vidbo_register_inputs(&vidbo_context, inputs, num_inputs);
   }
 
   signal(SIGINT, INThandler);
@@ -120,7 +129,7 @@ int main(int argc, char **argv, char **env)
 
     /* To improve performance, only poll websockets connection every 10000 sim cycles */
     check_vidbo++;
-    if (!(check_vidbo % 10000)) {
+    if (!(check_vidbo % 10000) && !riscof_mode) {
 
       /* Send out all GPIO status
        TODO: Only send changed pins.
@@ -158,16 +167,26 @@ int main(int argc, char **argv, char **env)
     }
 
     /* Write character to UART */
-    if (!(check_vidbo % 1000000) && is_board_connected()) {
-      std::string uart_string = m_uart->get_string();
+    if (!(check_vidbo % 1000000) && is_board_connected() && !riscof_mode) {
+      uart_string = m_uart->get_string();
       int idx = 0;
-      std::string group_string = "uart";
       std::string send_str;
 
       for (const char& ch : uart_string) {
         send_str = group_string + std::to_string(idx);
         vidbo_send(&vidbo_context, main_time, "serial", send_str.c_str(), ch);
         idx++;
+      }
+    }
+
+    if (riscof_mode) {
+      riscof_str = m_uart->get_string();
+      if (!riscof_str.empty()) {
+        if (riscof_str == "RVMODEL_HALT\n") {
+          done = true;
+        } else {
+          printf("%s",riscof_str.c_str());
+        }
       }
     }
 

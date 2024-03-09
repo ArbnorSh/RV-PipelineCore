@@ -2,13 +2,13 @@
 
 // In GPIO Inputs we have the switches
 // In GPIO Outputs we have the LEDs
-#define RGPIO_IN        0x80004000
-#define RGPIO_OUT       0x80004004
-#define RGPIO_OE        0x80004008
-#define RGPIO_INTE      0x8000400C
-#define RGPIO_PTRIG     0x80004010
-#define RGPIO_CTRL      0x80004018
-#define RGPIO_INTS      0x8000401C
+#define RGPIO_IN        0x80204000
+#define RGPIO_OUT       0x80204004
+#define RGPIO_OE        0x80204008
+#define RGPIO_INTE      0x8020400C
+#define RGPIO_PTRIG     0x80204010
+#define RGPIO_CTRL      0x80204018
+#define RGPIO_INTS      0x8020401C
 
 #define ENABLE_GPIOs    0xFFFF
 
@@ -16,7 +16,7 @@
 #define BTN_MIDDLE_IDX  20
 
 // Timer
-#define PTC_BASE_ADDR 0x80006200
+#define PTC_BASE_ADDR 0x80206200
 #define RPTC_CNTR (PTC_BASE_ADDR + 0x00)
 #define RPTC_HRC  (PTC_BASE_ADDR + 0x04)
 #define RPTC_LRC  (PTC_BASE_ADDR + 0x08)
@@ -25,7 +25,7 @@
 #define MS_100_COUNT (0x4C4B40)
 
 // seven segment controller
-#define WRITE_DIGITS_REG        0x80006000
+#define WRITE_DIGITS_REG        0x80206000
 
 #define READ_REG(addr) (*(volatile unsigned int *)addr)
 #define WRITE_REG(addr, value) { (*((volatile unsigned int *) (addr)) = (value)); }

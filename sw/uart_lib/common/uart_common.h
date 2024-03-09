@@ -1,4 +1,4 @@
-#define UART_ADDR       0x80005000
+#define UART_ADDR       0x80205000
 
 // alignment to word boundaries
 // Write Reg
