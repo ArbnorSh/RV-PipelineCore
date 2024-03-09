@@ -317,7 +317,7 @@ begin
      d_adr <= alu_result_m;
      read_data_m <= d_data_r;
      d_data_w <= write_data_m;
-     d_sel <= mem_control_m;
+     d_sel <= mem_control_m when mem_write_m = '1' else "1111";
      d_we <= mem_write_m and (not is_instr_exception_m);
      
      d_valid <= load_store_m and (not is_instr_exception_m);
