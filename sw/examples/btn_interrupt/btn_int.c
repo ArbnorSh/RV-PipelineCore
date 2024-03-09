@@ -25,7 +25,7 @@
 #define MS_100_COUNT (0x4C4B40)
 
 // seven segment controller
-#define WRITE_DIGITS_REG        0x80006000
+#define WRITE_DIGITS_REG        0x80206000
 
 #define READ_REG(addr) (*(volatile unsigned int *)addr)
 #define WRITE_REG(addr, value) { (*((volatile unsigned int *) (addr)) = (value)); }
