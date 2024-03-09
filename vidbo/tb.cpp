@@ -129,7 +129,7 @@ int main(int argc, char **argv, char **env)
 
     /* To improve performance, only poll websockets connection every 10000 sim cycles */
     check_vidbo++;
-    if (!(check_vidbo % 10000)) {
+    if (!(check_vidbo % 10000) && !riscof_mode) {
 
       /* Send out all GPIO status
        TODO: Only send changed pins.
@@ -167,7 +167,7 @@ int main(int argc, char **argv, char **env)
     }
 
     /* Write character to UART */
-    if (!(check_vidbo % 1000000) && is_board_connected()) {
+    if (!(check_vidbo % 1000000) && is_board_connected() && !riscof_mode) {
       uart_string = m_uart->get_string();
       int idx = 0;
       std::string send_str;
