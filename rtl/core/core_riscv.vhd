@@ -59,7 +59,8 @@ architecture Behavioral of core_riscv is
                result_src_w : out STD_LOGIC_VECTOR (1 downto 0);
                mret_instr_e : out STD_LOGIC;
                illegal_instruction_d : out STD_LOGIC;
-               take_branch_e : out STD_LOGIC);
+               take_branch_e : out STD_LOGIC;
+               env_call_instr_d : out STD_LOGIC);
     end component;
     
     component datapath is
@@ -109,7 +110,8 @@ architecture Behavioral of core_riscv is
                is_instr_exception_w : out STD_LOGIC; 
                illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
                take_branch_e : in STD_LOGIC;
-               is_decode_flush_d : out STD_LOGIC);
+               is_decode_flush_d : out STD_LOGIC;
+               env_call_instr_d : in STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -148,6 +150,7 @@ architecture Behavioral of core_riscv is
     signal is_instr_exception_m, trap_caught_w: std_logic;
     signal illegal_instruction_d, illegal_instruction_w, store_misaligned_m, load_misaligned_m : std_logic;
     signal is_instr_exception_w, take_branch_e, is_decode_flush_d: std_logic;
+    signal env_call_instr_d : std_logic;
 
 begin
 
@@ -194,7 +197,9 @@ begin
         reg_write_w => reg_write_w,
         result_src_w => result_src_w,
         illegal_instruction_d => illegal_instruction_d,
-        take_branch_e => take_branch_e
+        take_branch_e => take_branch_e,
+
+        env_call_instr_d => env_call_instr_d
         );
         
      datapath_block: datapath port map(
@@ -263,7 +268,9 @@ begin
         load_misaligned_m => load_misaligned_m,
         store_misaligned_m => store_misaligned_m,
         take_branch_e => take_branch_e,
-        is_decode_flush_d => is_decode_flush_d
+        is_decode_flush_d => is_decode_flush_d,
+
+        env_call_instr_d => env_call_instr_d
         );
     
     hazard_block: hazard_unit port map(
