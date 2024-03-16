@@ -19,6 +19,7 @@ entity csr_exec is
            rd1 : in STD_LOGIC_VECTOR (31 downto 0);
            imm_ext : in STD_LOGIC_VECTOR (31 downto 0);
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+           env_call_instr : in STD_LOGIC;
            illegal_instruction, instr_addr_misaligned : in STD_LOGIC;
            load_misaligned, store_misaligned : in STD_LOGIC;
            instr_except_pc : in std_logic_vector(31 downto 0);
@@ -109,7 +110,7 @@ begin
     begin
     
         is_exception <= instr_addr_misaligned or illegal_instruction or 
-                        load_misaligned or store_misaligned;
+                        load_misaligned or store_misaligned or env_call_instr;
         
         if pc_e /= 32X"0" then
             valid_pc <= '1';
@@ -134,6 +135,10 @@ begin
                 mtrap_cause <= 4D"04";
             elsif store_misaligned = '1' then
                 mtrap_cause <= 4D"06";
+            elsif env_call_instr = '1' and csr_address_write = 12D"00" then
+                mtrap_cause <= 4D"11";
+            elsif env_call_instr = '1' and csr_address_write = 12D"01" then
+                    mtrap_cause <= 4D"03";
             end if;
         else
             if interrupt_external_w = '1' then
@@ -178,6 +183,9 @@ begin
     csr_misa(31 downto 30) <= "01";
     
     -- MSTATUS and MSTATUSH
+    -- mpp is set to 3
+    csr_mstatus <= (31 downto 13 => '0', 12 downto 11 => 2D"03", 10 downto 8 => '0', 
+                    7 => csr_mstatus_mpie, 3 => csr_mstatus_mie, others => '0');
     process(clk)
     begin
         if rising_edge(clk) then   
@@ -306,10 +314,10 @@ begin
             if reset then
                 csr_mtval <= (others => '0');
             elsif trap_caught = '1' then
-                if instr_addr_misaligned or load_misaligned or store_misaligned then
-                    csr_mtval <= addr_except;
-                else
+                if illegal_instruction then
                     csr_mtval <= (others => '0');
+                else
+                    csr_mtval <= addr_except;
                 end if;
             elsif (csr_address_write = CSR_MTVAL_ADDR) and (write_enable = '1') then
                 csr_mtval <= write_value;
