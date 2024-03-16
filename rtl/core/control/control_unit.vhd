@@ -33,7 +33,8 @@ entity control_unit is
            result_src_w : out STD_LOGIC_VECTOR (1 downto 0);
            mret_instr_e : out STD_LOGIC;
            illegal_instruction_d : out STD_LOGIC;
-           take_branch_e : out STD_LOGIC);
+           take_branch_e : out STD_LOGIC;
+           env_call_instr_d : out STD_LOGIC);
 end control_unit;
 
 architecture Behavioral of control_unit is
@@ -57,7 +58,8 @@ architecture Behavioral of control_unit is
                load_store : out STD_LOGIC;
                csr_write : out STD_LOGIC;
                mret_instr : out STD_LOGIC;
-               illegal_instruction : out STD_LOGIC);
+               illegal_instruction : out STD_LOGIC;
+               env_call_instr : out STD_LOGIC);
     end component;
     
     component alu_decoder is
@@ -179,7 +181,8 @@ begin
         
         csr_write => csr_write_d,
         mret_instr => mret_instr_d,
-        illegal_instruction => illegal_instruction_d
+        illegal_instruction => illegal_instruction_d,
+        env_call_instr => env_call_instr_d
         );
     
     alu_dec: alu_decoder port map(
