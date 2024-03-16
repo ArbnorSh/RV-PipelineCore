@@ -6,6 +6,7 @@ entity main_decoder is
            funct3 : in STD_LOGIC_VECTOR (2 downto 0);
            rs1, rd : in STD_LOGIC_VECTOR(4 downto 0);
            imm_i_type : in STD_LOGIC_VECTOR(11 downto 0);
+           is_decode_flush_d : in STD_LOGIC;
            branch : out STD_LOGIC;
            jump : out STD_LOGIC;
            result_src : out STD_LOGIC_VECTOR (1 downto 0);
@@ -78,8 +79,15 @@ begin
                 end if;
             -- fence
             -- no architecture state change
-            when "0000000" | "0001111" =>
+            when "0001111" =>
                 out_control <= "000000000000000000";
+            when "0000000" =>
+                out_control <= "000000000000000000";
+                if is_decode_flush_d = '0' then
+                    illegal_instruction <= '0';
+                else
+                    illegal_instruction <= '1';
+                end if;
             when others =>
                 illegal_instruction <= '1';
         end case;
