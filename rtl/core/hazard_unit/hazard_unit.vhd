@@ -9,7 +9,6 @@ entity hazard_unit is
            load_store_m : in STD_LOGIC;
            reg_write_m, reg_write_w : in STD_LOGIC;
            instruction_ack, instruction_valid, data_ack : in STD_LOGIC;
-           instr_addr_misaligned_d, instr_addr_misaligned_w : in STD_LOGIC;
            illegal_instruction_d, illegal_instruction_w : in STD_LOGIC;
            load_misaligned_m, store_misaligned_m : in STD_LOGIC;
            is_instr_exception_e, is_instr_exception_m: in STD_LOGIC;
@@ -125,9 +124,9 @@ begin
         
             if reset then
                 pending_exception_f <= '0';
-            elsif instr_addr_misaligned_d = '1' or illegal_instruction_d = '1' then
+            elsif illegal_instruction_d = '1' then
                 pending_exception_f <= '1';
-            elsif instr_addr_misaligned_w = '1' or illegal_instruction_w = '1' then
+            elsif illegal_instruction_w = '1' then
                 pending_exception_f <= '0';
             end if;
         
