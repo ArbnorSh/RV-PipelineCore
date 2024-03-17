@@ -49,7 +49,8 @@ entity datapath is
            illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
            take_branch_e : in STD_LOGIC;
            is_decode_flush_d : out STD_LOGIC;
-           env_call_instr_d : in STD_LOGIC);
+           env_call_instr_d : in STD_LOGIC;
+           mul_instr_e : in STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -198,6 +199,14 @@ architecture Behavioral of datapath is
                mret_instr : in std_logic;
                pc_e : in std_logic_vector(31 downto 0));
     end component;
+
+    component mul is
+        port (
+              a, b : in STD_LOGIC_VECTOR(31 downto 0);
+              funct3 : in STD_LOGIC_VECTOR(2 downto 0);
+              mul_result : out STD_LOGIC_VECTOR(31 downto 0)
+              );
+    end component;
     
     signal op_d, op_e : std_logic_vector(6 downto 0);
     signal funct3_d : std_logic_vector(2 downto 0);
@@ -233,6 +242,9 @@ architecture Behavioral of datapath is
     signal mret_instr_m, mret_instr_w, misaligned_pc_e: std_logic;
     signal is_decode_flush_f, env_call_instr_e, env_call_instr_m, env_call_instr_w : std_logic;
     signal addr_except_w: std_logic_vector(31 downto 0);
+
+    -- mul
+    signal alu_or_mul_result_e, mul_result_e : std_logic_vector(31 downto 0);
 
 begin
 
@@ -361,6 +373,20 @@ begin
         carry => carry_e,
         overflow => overflow_e
         );
+
+    multiplier: mul port map(
+        a => src_a_e,
+        b => src_b_e,
+        funct3 => funct3_e,
+        mul_result => mul_result_e
+        );
+    
+    alu_or_mul_result: mux2 generic map(32) port map(
+        a => alu_result_e,
+        b => mul_result_e,
+        s => mul_instr_e,
+        y => alu_or_mul_result_e
+    );
         
     branch_add: adder port map(
         a => pc_src_a_e,
@@ -419,7 +445,7 @@ begin
     is_instr_exception_e <= illegal_instruction_e or misaligned_pc_e or env_call_instr_e;
     
     output_from_execute: mux2 generic map(32) port map(
-        a => alu_result_e,
+        a => alu_or_mul_result_e,
         b => out_write_reg_e,
         s => csr_write_e,
         y => data_output_from_execute
