@@ -34,7 +34,10 @@ entity control_unit is
            mret_instr_e : out STD_LOGIC;
            illegal_instruction_d : out STD_LOGIC;
            take_branch_e : out STD_LOGIC;
-           env_call_instr_d : out STD_LOGIC);
+           env_call_instr_d : out STD_LOGIC;
+           mul_instr_e : out STD_LOGIC;
+           div_instr_e : out STD_LOGIC;
+           div_instr_d : out STD_LOGIC);
 end control_unit;
 
 architecture Behavioral of control_unit is
@@ -122,6 +125,14 @@ architecture Behavioral of control_unit is
                d : in STD_LOGIC_VECTOR (width - 1 downto 0);
                q : out STD_LOGIC_VECTOR (width - 1 downto 0));
     end component;
+
+    component mul_div_decoder is
+        Port ( op : in STD_LOGIC_VECTOR(6 downto 0);
+               funct3 : in STD_LOGIC_VECTOR (2 downto 0);
+               funct7_0 : in STD_LOGIC;
+               mul_instr : out STD_LOGIC;
+               div_instr : out STD_LOGIC);
+    end component;
     
     signal reg_write_d, reg_write_e: std_logic;
     signal branch_d, branch_e: std_logic;
@@ -131,7 +142,7 @@ architecture Behavioral of control_unit is
     signal alu_op_d: std_logic_vector(1 downto 0);
     signal alu_control_d: std_logic_vector(3 downto 0);
     signal alu_src_a_d, alu_src_b_d: std_logic;
-    signal output_from_e_floprc: std_logic_vector(18 downto 0);
+    signal output_from_e_floprc: std_logic_vector(20 downto 0);
     signal output_from_m_flopr: std_logic_vector(7 downto 0);
     signal output_from_w_flopr: std_logic_vector(2 downto 0);
     signal funct3_e, funct3_m: std_logic_vector(2 downto 0);
@@ -144,6 +155,7 @@ architecture Behavioral of control_unit is
     signal funct7_b5_d : std_logic;
     signal rs1_d, rs2_d, rd_d : std_logic_vector(4 downto 0);
     signal imm_i_type_d : std_logic_vector(11 downto 0);
+    signal mul_instr_d : std_logic;
     
 begin
 
@@ -191,8 +203,16 @@ begin
         func7_5 => funct7_b5_d,
         alu_op => alu_op_d,
         alu_control => alu_control_d);
-    
-    control_reg_e: flopenrc generic map(19)
+
+    mul_div_dec: mul_div_decoder port map(
+        op => opcode_d,
+        funct3 => funct3_d,
+        funct7_0 => instr_d(25),
+        mul_instr => mul_instr_d,
+        div_instr => div_instr_d
+        );
+
+    control_reg_e: flopenrc generic map(21)
         port map(
             clk => clk, 
             reset => reset, 
@@ -200,13 +220,14 @@ begin
             enable => (not stall_e),
             d => (funct3_d & reg_write_d & result_src_d & mem_write_d & jump_d & branch_d &
                   alu_control_d & alu_src_a_d & alu_src_b_d & pc_target_src_d & load_store_d &
-                  load_instr_d, mret_instr_d),
+                  load_instr_d & mret_instr_d & mul_instr_d & div_instr_d),
             q => output_from_e_floprc
         );
     
     (funct3_e, reg_write_e, result_src_e, mem_write_e, jump_e, branch_e,
      alu_control_e, alu_src_a_e, alu_src_b_e, pc_target_src_e,
-     load_store_e, load_instr_e, mret_instr_e) <= output_from_e_floprc;
+     load_store_e, load_instr_e, mret_instr_e, mul_instr_e, 
+     div_instr_e) <= output_from_e_floprc;
     
     branch_block: branch_check port map(
         branch => branch_e,

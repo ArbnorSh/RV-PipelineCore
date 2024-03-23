@@ -60,7 +60,10 @@ architecture Behavioral of core_riscv is
                mret_instr_e : out STD_LOGIC;
                illegal_instruction_d : out STD_LOGIC;
                take_branch_e : out STD_LOGIC;
-               env_call_instr_d : out STD_LOGIC);
+               env_call_instr_d : out STD_LOGIC;
+               mul_instr_e : out STD_LOGIC;
+               div_instr_e : out STD_LOGIC;
+               div_instr_d : out STD_LOGIC);
     end component;
     
     component datapath is
@@ -111,7 +114,10 @@ architecture Behavioral of core_riscv is
                illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
                take_branch_e : in STD_LOGIC;
                is_decode_flush_d : out STD_LOGIC;
-               env_call_instr_d : in STD_LOGIC);
+               env_call_instr_d : in STD_LOGIC;
+               mul_instr_e : in STD_LOGIC;
+               div_instr_e : in STD_LOGIC;
+               div_completed_e : out STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -128,7 +134,8 @@ architecture Behavioral of core_riscv is
                is_instr_exception_w, trap_caught : in STD_LOGIC;
                forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
                stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
-               flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
+               flush_d, flush_e, flush_m, flush_w: out STD_LOGIC;
+               div_instr_d, div_completed_e : in STD_LOGIC);
     end component;
     
     signal instr_d : std_logic_vector(31 downto 0);
@@ -150,7 +157,8 @@ architecture Behavioral of core_riscv is
     signal is_instr_exception_m, trap_caught_w: std_logic;
     signal illegal_instruction_d, illegal_instruction_w, store_misaligned_m, load_misaligned_m : std_logic;
     signal is_instr_exception_w, take_branch_e, is_decode_flush_d: std_logic;
-    signal env_call_instr_d : std_logic;
+    signal env_call_instr_d, mul_instr_e, div_instr_e, div_completed_e : std_logic;
+    signal div_instr_d : std_logic;
 
 begin
 
@@ -199,7 +207,10 @@ begin
         illegal_instruction_d => illegal_instruction_d,
         take_branch_e => take_branch_e,
 
-        env_call_instr_d => env_call_instr_d
+        env_call_instr_d => env_call_instr_d,
+        mul_instr_e => mul_instr_e,
+        div_instr_d => div_instr_d,
+        div_instr_e => div_instr_e
         );
         
      datapath_block: datapath port map(
@@ -270,7 +281,10 @@ begin
         take_branch_e => take_branch_e,
         is_decode_flush_d => is_decode_flush_d,
 
-        env_call_instr_d => env_call_instr_d
+        env_call_instr_d => env_call_instr_d,
+        mul_instr_e => mul_instr_e,
+        div_instr_e => div_instr_e,
+        div_completed_e => div_completed_e
         );
     
     hazard_block: hazard_unit port map(
@@ -313,7 +327,9 @@ begin
         flush_w => flush_w,
         
         csr_instr_e => csr_instr_e,
-        csr_instr_w => csr_instr_w
+        csr_instr_w => csr_instr_w,
+        div_instr_d => div_instr_d,
+        div_completed_e => div_completed_e
         );
      
      is_instruction_valid <= (not reset);

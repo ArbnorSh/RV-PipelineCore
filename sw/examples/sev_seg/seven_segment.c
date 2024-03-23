@@ -35,19 +35,19 @@ void count(volatile unsigned short btns_val)
     return;
 }
 
-void a_thousand(volatile unsigned short btns_val)
+void mul_div(volatile unsigned short btns_val)
 {
     static int btn_right_clicked, btn_left_clicked;
 
     if ((btns_val & BTN_RIGHT) && !btn_right_clicked) {
-        g_value += 10000;
+        g_value *= 10;
         btn_right_clicked = 1;
     } else if (!(btns_val & BTN_RIGHT)) {
         btn_right_clicked = 0;
     }
 
     if ((btns_val & BTN_LEFT) && !btn_left_clicked) {
-        g_value -= 10000;
+        g_value /= 10;
         btn_left_clicked = 1;
     } else if (!(btns_val & BTN_LEFT)) {
         btn_left_clicked = 0;
@@ -65,7 +65,7 @@ int main()
         btns_val = gpio_in_val >> 16;
 
         count(btns_val);
-        a_thousand(btns_val);
+        mul_div(btns_val);
 
         WRITE_REG(WRITE_DIGITS_REG, g_value);
     }

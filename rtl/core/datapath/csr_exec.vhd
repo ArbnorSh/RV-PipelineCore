@@ -179,6 +179,8 @@ begin
     -- MISA
     -- bit 8 -> RV32I base ISA
     csr_misa(8) <= '1';
+    -- bit 12 -> M extension
+    csr_misa(12) <= '1';
     -- bit 30 and 31 sets MXL to 1, for XLEN -> 32
     csr_misa(31 downto 30) <= "01";
     

@@ -96,6 +96,8 @@ class rv_core(pluginTemplate):
       self.isa = 'rv' + self.xlen
       if "I" in ispec["ISA"]:
           self.isa += 'i'
+      if "M" in ispec["ISA"]:
+          self.isa += 'i'
 
       self.compile_cmd = self.compile_cmd+' -mabi='+('lp64 ' if 64 in ispec['supported_xlen'] else 'ilp32 ')
 
