@@ -6,7 +6,7 @@ ASM_INC ?= -I .
 RISCV_PREFIX ?= riscv32-unknown-elf-
 
 # CPU architecture and ABI
-MARCH ?= rv32i_zicsr
+MARCH ?= rv32im_zicsr
 MABI  ?= ilp32
 
 # Path to RTL, needed for hex generation

@@ -15,14 +15,15 @@ entity hazard_unit is
            is_instr_exception_w, trap_caught : in STD_LOGIC;
            forward_a_e, forward_b_e : out STD_LOGIC_VECTOR (1 downto 0);
            stall_f, stall_d, stall_e, stall_m : out STD_LOGIC; 
-           flush_d, flush_e, flush_m, flush_w: out STD_LOGIC);
+           flush_d, flush_e, flush_m, flush_w: out STD_LOGIC;
+           div_instr_d, div_completed_e : in STD_LOGIC);
 end hazard_unit;
 
 architecture Behavioral of hazard_unit is
     signal lw_stall_d, f_and_d_state, d_and_e_state: std_logic;
     signal ignore_instr_mem_handshake : std_logic := '0';
     signal raw_instr_mem_handshake, instr_mem_handshake, waiting_on_instruction: std_logic;
-    signal csr_pending : std_logic;
+    signal csr_pending, div_pending : std_logic;
     signal jump_instr, pending_exception_f : std_logic;
     signal pending_exception_m : std_logic;
 begin
@@ -116,7 +117,26 @@ begin
         end if;
         
     end process;
-    
+
+    -- Pending div instruction
+    -- out-of-pipeline div unit
+    process(clk)
+    begin
+        
+        if rising_edge(clk) then
+        
+            if reset then
+                div_pending <= '0';
+            elsif div_instr_d = '1' then
+                div_pending <= '1';
+            elsif div_completed_e = '1' then
+                div_pending <= '0';
+            end if;
+        
+        end if;
+        
+    end process;
+
     process(clk)
     begin
         
@@ -158,13 +178,13 @@ begin
     stall_f <= lw_stall_d or waiting_on_instruction or stall_d or csr_pending or 
                pending_exception_f or pending_exception_m;
     stall_d <= lw_stall_d or stall_e or csr_pending;
-    stall_e <= stall_m;
+    stall_e <= stall_m or div_pending;
     stall_m <= load_store_m and (not data_ack);
     
     flush_d <= jump_instr or (waiting_on_instruction and not stall_d) or (pending_exception_f and not stall_d) or 
                pending_exception_m;
     flush_e <= lw_stall_d or jump_instr or csr_pending or pending_exception_m;
-    flush_m <= pending_exception_m;
+    flush_m <= pending_exception_m or div_pending;
     flush_w <= '0'; --stall_m;
 
 end Behavioral;

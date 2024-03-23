@@ -50,7 +50,9 @@ entity datapath is
            take_branch_e : in STD_LOGIC;
            is_decode_flush_d : out STD_LOGIC;
            env_call_instr_d : in STD_LOGIC;
-           mul_instr_e : in STD_LOGIC);
+           mul_instr_e : in STD_LOGIC;
+           div_instr_e : in STD_LOGIC;
+           div_completed_e : out STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -208,6 +210,17 @@ architecture Behavioral of datapath is
               );
     end component;
     
+    component div is
+        port (
+              clk, reset : in STD_LOGIC;
+              a, b : in STD_LOGIC_VECTOR(31 downto 0);
+              div_start : in STD_LOGIC;
+              funct3 : in STD_LOGIC_VECTOR(2 downto 0);
+              div_completed : out STD_LOGIC;
+              div_result : out STD_LOGIC_VECTOR(31 downto 0)
+              );
+    end component;
+    
     signal op_d, op_e : std_logic_vector(6 downto 0);
     signal funct3_d : std_logic_vector(2 downto 0);
     signal funct7_b5_d : std_logic; 
@@ -243,8 +256,9 @@ architecture Behavioral of datapath is
     signal is_decode_flush_f, env_call_instr_e, env_call_instr_m, env_call_instr_w : std_logic;
     signal addr_except_w: std_logic_vector(31 downto 0);
 
-    -- mul
-    signal alu_or_mul_result_e, mul_result_e : std_logic_vector(31 downto 0);
+    -- mul, div
+    signal alu_or_muldiv_result_e, mul_result_e, div_result_e : std_logic_vector(31 downto 0);
+    signal mul_or_div_result_e : std_logic_vector(31 downto 0);
 
 begin
 
@@ -380,12 +394,30 @@ begin
         funct3 => funct3_e,
         mul_result => mul_result_e
         );
+
+    division: div port map(
+        clk => clk,
+        reset => reset or flush_e,
+        a => src_a_e,
+        b => src_b_e,
+        div_start => div_instr_e,
+        funct3 => funct3_e,
+        div_completed => div_completed_e,
+        div_result => div_result_e
+    );
+
+    mul_or_div_result: mux2 generic map(32) port map(
+        a => mul_result_e,
+        b => div_result_e,
+        s => div_instr_e,
+        y => mul_or_div_result_e
+    );
     
     alu_or_mul_result: mux2 generic map(32) port map(
         a => alu_result_e,
-        b => mul_result_e,
-        s => mul_instr_e,
-        y => alu_or_mul_result_e
+        b => mul_or_div_result_e,
+        s => mul_instr_e or div_instr_e,
+        y => alu_or_muldiv_result_e
     );
         
     branch_add: adder port map(
@@ -445,7 +477,7 @@ begin
     is_instr_exception_e <= illegal_instruction_e or misaligned_pc_e or env_call_instr_e;
     
     output_from_execute: mux2 generic map(32) port map(
-        a => alu_or_mul_result_e,
+        a => alu_or_muldiv_result_e,
         b => out_write_reg_e,
         s => csr_write_e,
         y => data_output_from_execute
