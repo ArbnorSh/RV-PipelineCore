@@ -8,3 +8,4 @@
 
 void uart_init();
 int uart_write_str(const char* string);
+void uart_write_char(char c);

@@ -26,9 +26,14 @@ void uart_init()
 int uart_write_str(const char* string)
 {
     for (int i = 0; i < strlen(string); i++) {
-        while (!(READ_UART_REG(UART_LINE_STATUS) & UART_FIFO_TX_EMPTY)) { };
-        WRITE_UART_REG(UART_TX_HOLD_REG, string[i]);
+        uart_write_char(string[i]);
     }
 
     return 0;
+}
+
+void uart_write_char(char c)
+{
+    while (!(READ_UART_REG(UART_LINE_STATUS) & UART_FIFO_TX_EMPTY)) { };
+    WRITE_UART_REG(UART_TX_HOLD_REG, c);
 }
