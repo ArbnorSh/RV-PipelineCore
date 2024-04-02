@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Original Author: Shay Gal-on
+Modified: Arbnor Shabani
 */
 /* Topic : Description
         This file contains configuration constants required to execute on
@@ -21,6 +22,13 @@ Original Author: Shay Gal-on
 */
 #ifndef CORE_PORTME_H
 #define CORE_PORTME_H
+
+#include <stdlib.h>
+#include <stdint.h>
+
+#define ITERATIONS (1000)
+#define FLAGS_STR  CFLAGS_STR
+
 /************************/
 /* Data types and settings */
 /************************/
@@ -28,21 +36,21 @@ Original Author: Shay Gal-on
         Define to 1 if the platform supports floating point.
 */
 #ifndef HAS_FLOAT
-#define HAS_FLOAT 1
+#define HAS_FLOAT 0
 #endif
 /* Configuration : HAS_TIME_H
         Define to 1 if platform has the time.h header file,
         and implementation of functions thereof.
 */
 #ifndef HAS_TIME_H
-#define HAS_TIME_H 1
+#define HAS_TIME_H 0
 #endif
 /* Configuration : USE_CLOCK
         Define to 1 if platform has the time.h header file,
         and implementation of functions thereof.
 */
 #ifndef USE_CLOCK
-#define USE_CLOCK 1
+#define USE_CLOCK 0
 #endif
 /* Configuration : HAS_STDIO
         Define to 1 if the platform has stdio.h.
@@ -84,12 +92,13 @@ Original Author: Shay Gal-on
         ee_ptr_int needs to be the data type used to hold pointers, otherwise
    coremark may fail!!!
 */
-typedef signed short   ee_s16;
-typedef unsigned short ee_u16;
-typedef signed int     ee_s32;
+typedef int16_t        ee_s16;
+typedef uint16_t       ee_u16;
+typedef int32_t        ee_s32;
 typedef double         ee_f32;
 typedef unsigned char  ee_u8;
-typedef unsigned int   ee_u32;
+typedef uint32_t       ee_u32;
+typedef uint64_t      ee_u64;
 typedef ee_u32         ee_ptr_int;
 typedef size_t         ee_size_t;
 #define NULL ((void *)0)
@@ -102,8 +111,8 @@ typedef size_t         ee_size_t;
 /* Configuration : CORE_TICKS
         Define type of return from the timing functions.
  */
-#define CORETIMETYPE ee_u32
-typedef ee_u32 CORE_TICKS;
+#define CORETIMETYPE ee_u64
+typedef ee_u64 CORE_TICKS;
 
 /* Configuration : SEED_METHOD
         Defines method to get seed values that cannot be computed at compile

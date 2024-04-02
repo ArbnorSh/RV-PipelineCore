@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Original Author: Shay Gal-on
+Modified: Arbnor Shabani
 */
 #include "coremark.h"
 #include "core_portme.h"
+#include "uart_lib.h"
+#include "rv_csr.h"
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
@@ -44,8 +47,7 @@ volatile ee_s32 seed5_volatile = 0;
 CORETIMETYPE
 barebones_clock()
 {
-#error \
-    "You must implement a method to measure time in barebones_clock()! This function should return current time.\n"
+    return get_mcycle();
 }
 /* Define : TIMER_RES_DIVIDER
         Divider to trade off timer resolution and total time that can be
@@ -60,9 +62,12 @@ barebones_clock()
 #define TIMER_RES_DIVIDER          1
 #define SAMPLE_TIME_IMPLEMENTATION 1
 #define EE_TICKS_PER_SEC           (CLOCKS_PER_SEC / TIMER_RES_DIVIDER)
+#define CORE_CLOCKS_PER_SEC        50000000
+#define CORE_TICKS_PER_SEC         (CORE_CLOCKS_PER_SEC / TIMER_RES_DIVIDER)
 
 /** Define Host specific (POSIX), or target specific global time variables. */
 static CORETIMETYPE start_time_val, stop_time_val;
+static ee_u64 instructions_retired;
 
 /* Function : start_time
         This function will be called right before starting the timed portion of
@@ -75,6 +80,8 @@ static CORETIMETYPE start_time_val, stop_time_val;
 void
 start_time(void)
 {
+    set_mcycle(0);
+    set_minstret(0);
     GETMYTIME(&start_time_val);
 }
 /* Function : stop_time
@@ -89,6 +96,7 @@ void
 stop_time(void)
 {
     GETMYTIME(&stop_time_val);
+    instructions_retired = get_minstret();
 }
 /* Function : get_time
         Return an abstract "ticks" number that signifies time on the system.
@@ -116,7 +124,7 @@ get_time(void)
 secs_ret
 time_in_secs(CORE_TICKS ticks)
 {
-    secs_ret retval = ((secs_ret)ticks) / (secs_ret)EE_TICKS_PER_SEC;
+    secs_ret retval = (secs_ret)(((CORE_TICKS)ticks) / ((CORE_TICKS)CORE_TICKS_PER_SEC));
     return retval;
 }
 
@@ -129,8 +137,7 @@ ee_u32 default_num_contexts = 1;
 void
 portable_init(core_portable *p, int *argc, char *argv[])
 {
-#error \
-    "Call board initialization routines in portable init (if needed), in particular initialize UART!\n"
+    uart_init();
 
     (void)argc; // prevent unused warning
     (void)argv; // prevent unused warning
@@ -146,6 +153,8 @@ portable_init(core_portable *p, int *argc, char *argv[])
         ee_printf("ERROR! Please define ee_u32 to a 32b unsigned type!\n");
     }
     p->portable_id = 1;
+    
+    ee_printf("RISCV Core: Running coremark with %u iterations...\n", (uint32_t)ITERATIONS);
 }
 /* Function : portable_fini
         Target specific final code
@@ -154,4 +163,6 @@ void
 portable_fini(core_portable *p)
 {
     p->portable_id = 0;
+    ee_printf("RISCV CORE: Total clock cycles: %u\n", (uint32_t) stop_time_val);
+    ee_printf("RISCV CORE: Total instructions retired: %u\n", (uint32_t) instructions_retired);
 }
