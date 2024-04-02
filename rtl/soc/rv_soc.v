@@ -51,17 +51,24 @@ module rv_soc(
         .d_wb_ack (wb_dbus_ack)
     );
     
-    assign wb_rom_we = 0;
+    assign wb_irom_we = 0;
+    assign wb_drom_we = 0;
     
-    rom_wb rom(
+    dp_rom_wb rom(
         .wb_clk (wb_clk),
         .wb_rst (wb_rst),
         
-        .wb_adr (wb_rom_adr),
-        .wb_data (wb_rom_rdt),
-        .wb_cyc (wb_rom_cyc),
-        .wb_stb (wb_rom_stb),
-        .wb_ack (wb_rom_ack)
+        .a_wb_adr (wb_irom_adr),
+        .a_wb_data (wb_irom_rdt),
+        .a_wb_cyc (wb_irom_cyc),
+        .a_wb_stb (wb_irom_stb),
+        .a_wb_ack (wb_irom_ack),
+
+        .b_wb_adr (wb_drom_adr),
+        .b_wb_data (wb_drom_rdt),
+        .b_wb_cyc (wb_drom_cyc),
+        .b_wb_stb (wb_drom_stb),
+        .b_wb_ack (wb_drom_ack)
     );
     
     ram_wb ram(
