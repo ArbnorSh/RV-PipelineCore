@@ -34,10 +34,12 @@ entity control_unit is
            mret_instr_e : out STD_LOGIC;
            illegal_instruction_d : out STD_LOGIC;
            take_branch_e : out STD_LOGIC;
+           branch_e : out STD_LOGIC;
            env_call_instr_d : out STD_LOGIC;
            mul_instr_e : out STD_LOGIC;
            div_instr_e : out STD_LOGIC;
-           div_instr_d : out STD_LOGIC);
+           div_instr_d : out STD_LOGIC;
+           is_mispredict_tbranch_e, is_mispredict_ntbranch_e : in STD_LOGIC);
 end control_unit;
 
 architecture Behavioral of control_unit is
@@ -239,7 +241,7 @@ begin
         take_branch => take_branch_e
         );
          
-    pc_src_e <= take_branch_e or jump_e;
+    pc_src_e <= (take_branch_e and is_mispredict_tbranch_e) or jump_e or is_mispredict_ntbranch_e;
     result_src_b0_e <= result_src_e(0);
     
     control_reg_m: flopenrc generic map(8)

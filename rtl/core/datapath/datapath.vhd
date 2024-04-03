@@ -47,12 +47,14 @@ entity datapath is
            illegal_instruction_d, load_store_m : in STD_LOGIC; 
            is_instr_exception_w : out STD_LOGIC;
            illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
+           branch_e : in STD_LOGIC;
            take_branch_e : in STD_LOGIC;
            is_decode_flush_d : out STD_LOGIC;
            env_call_instr_d : in STD_LOGIC;
            mul_instr_e : in STD_LOGIC;
            div_instr_e : in STD_LOGIC;
-           div_completed_e : out STD_LOGIC);
+           div_completed_e : out STD_LOGIC;
+           is_mispredict_tbranch_e, is_mispredict_ntbranch_e : out STD_LOGIC);
 end datapath;
 
 architecture Behavioral of datapath is
@@ -222,6 +224,32 @@ architecture Behavioral of datapath is
               );
     end component;
     
+    component branch_predictor is
+        port (
+              clk : in STD_LOGIC;
+              pc, pc_e : in STD_LOGIC_VECTOR(31 downto 0);
+              branch_instr_e: in STD_LOGIC;
+              branch_taken_e : in STD_LOGIC;
+              jump_address: in std_logic_vector(31 downto 0);
+              branch_predicted : out STD_LOGIC;
+              predicted_pc : out STD_LOGIC_VECTOR(31 downto 0)
+        );
+    end component;
+
+    component branch_misprediction is
+        port (
+              valid_pc_e, valid_pc_d : in STD_LOGIC;
+              branch_instr, take_branch : in STD_LOGIC;
+              jump_target_pc, pc_f, pc_d: in std_logic_vector(31 downto 0);
+              pc_plus4_e : out STD_LOGIC_VECTOR(31 downto 0);
+              -- Did we mispredict an actual taken branch
+              is_mispredict_tbranch_e : out STD_LOGIC;
+              -- Did we mispredict an actual not taken branch
+              is_mispredict_ntbranch_e : out STD_LOGIC
+        );
+    end component;
+    
+    
     signal op_d, op_e : std_logic_vector(6 downto 0);
     signal funct3_d : std_logic_vector(2 downto 0);
     signal funct7_b5_d : std_logic; 
@@ -262,16 +290,30 @@ architecture Behavioral of datapath is
     signal alu_or_muldiv_result_e, mul_result_e, div_result_e : std_logic_vector(31 downto 0);
     signal mul_or_div_result_e : std_logic_vector(31 downto 0);
 
+    -- branch prediction
+    signal predicted_pc_f, jump_target_e : std_logic_vector(31 downto 0);
+    signal branch_predicted_f : std_logic;
+
 begin
 
-    next_pc: mux2 generic map(32) port map(
-        a => pc_plus4_f, 
-        b => jump_pc_target_e,
-        s => pc_src_e, 
-        y => pc_next_no_excep
-        );
-    
-    pc_next_f <= trap_jump_addr_w when trap_caught_w = '1' else pc_next_no_excep;
+    branch_predict: branch_predictor port map(
+        clk => clk,
+        pc => pc_f,
+        pc_e => pc_e,
+        branch_instr_e => branch_e,
+        branch_taken_e => take_branch_e,
+        jump_address => jump_pc_target_e,
+        branch_predicted => branch_predicted_f,
+        predicted_pc => predicted_pc_f
+    );
+
+    jump_target_e <= pc_plus4_e when is_mispredict_ntbranch_e else
+                     jump_pc_target_e;
+
+    pc_next_f <= trap_jump_addr_w when trap_caught_w = '1' else 
+                 jump_target_e when pc_src_e = '1' else
+                 predicted_pc_f when branch_predicted_f = '1' else
+                 pc_plus4_f;
     
     pc_register: flopenr generic map(32) port map(
         clk => clk,
@@ -478,6 +520,19 @@ begin
                        '0';
 
     is_instr_exception_e <= illegal_instruction_e or misaligned_pc_e or env_call_instr_e;
+
+    branch_mispredict: branch_misprediction port map(
+        valid_pc_e => valid_pc_e,
+        valid_pc_d => is_decode_flush_d,
+        branch_instr => branch_e,
+        take_branch => take_branch_e,
+        jump_target_pc => jump_pc_target_e,
+        pc_f => pc_f,
+        pc_d => pc_d,
+        pc_plus4_e => pc_plus4_e,
+        is_mispredict_tbranch_e => is_mispredict_tbranch_e,
+        is_mispredict_ntbranch_e => is_mispredict_ntbranch_e
+        );
     
     output_from_execute: mux2 generic map(32) port map(
         a => alu_or_muldiv_result_e,
