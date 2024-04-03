@@ -144,7 +144,7 @@ begin
         
             if reset then
                 pending_exception_f <= '0';
-            elsif illegal_instruction_d = '1' then
+            elsif illegal_instruction_d = '1' and pending_exception_m = '0' then
                 pending_exception_f <= '1';
             elsif illegal_instruction_w = '1' then
                 pending_exception_f <= '0';
