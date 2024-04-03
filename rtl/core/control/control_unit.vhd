@@ -137,7 +137,7 @@ architecture Behavioral of control_unit is
     end component;
     
     signal reg_write_d, reg_write_e: std_logic;
-    signal branch_d, branch_e: std_logic;
+    signal branch_d: std_logic;
     signal jump_d, jump_e: std_logic;
     signal result_src_d, result_src_e, result_src_m: std_logic_vector(1 downto 0);
     signal mem_write_d, mem_write_e: std_logic;

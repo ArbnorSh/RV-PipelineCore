@@ -39,7 +39,7 @@ begin
 
     process(clk)
     begin
-        if rising_edge(clk) and branch_instr_e then
+        if rising_edge(clk) and branch_instr_e = '1' then
             pc_buffer(to_integer(unsigned(pc_e_index))) <= jump_address;
             pc_check(to_integer(unsigned(pc_e_index))) <= pc_e(14 downto 7);
             if branch_taken_e = '1' then

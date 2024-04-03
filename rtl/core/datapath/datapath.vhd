@@ -241,7 +241,7 @@ architecture Behavioral of datapath is
               valid_pc_e, valid_pc_d : in STD_LOGIC;
               branch_instr, take_branch : in STD_LOGIC;
               jump_target_pc, pc_f, pc_d: in std_logic_vector(31 downto 0);
-              pc_plus4_e : out STD_LOGIC_VECTOR(31 downto 0);
+              pc_plus4_e : in STD_LOGIC_VECTOR(31 downto 0);
               -- Did we mispredict an actual taken branch
               is_mispredict_tbranch_e : out STD_LOGIC;
               -- Did we mispredict an actual not taken branch
