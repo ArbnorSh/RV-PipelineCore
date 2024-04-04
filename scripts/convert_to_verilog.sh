@@ -21,11 +21,11 @@ ghdl -i --std=08 --work=processor --workdir=build -Pbuild -fsynopsys \
   "$PATH_TO_RTL"/wishbone_memory/*.vhd \
 
 ghdl -m --std=08 --work=processor --workdir=build -fsynopsys processor
-ghdl -m --std=08 --work=processor --workdir=build -fsynopsys rom_wb
+ghdl -m --std=08 --work=processor --workdir=build -fsynopsys dp_rom_wb
 ghdl -m --std=08 --work=processor --workdir=build -fsynopsys ram_wb
 
 ghdl synth --std=08 -fsynopsys --latches --work=processor --workdir=build -Pbuild --out=verilog processor > "$PATH_TO_VERILOG_FOLDER"/processor.v
-ghdl synth --std=08 -fsynopsys --work=processor --workdir=build -Pbuild --out=verilog $ARG_TO_GHDL rom_wb > "$PATH_TO_VERILOG_FOLDER"/rom_wb.v
+ghdl synth --std=08 -fsynopsys --work=processor --workdir=build -Pbuild --out=verilog $ARG_TO_GHDL dp_rom_wb > "$PATH_TO_VERILOG_FOLDER"/dp_rom_wb.v
 ghdl synth --std=08 -fsynopsys --work=processor --workdir=build -Pbuild --out=verilog $ARG_TO_GHDL ram_wb > "$PATH_TO_VERILOG_FOLDER"/ram_wb.v
 
 # Quirk: when shift right arithmetic is converted to verilog it is shift right logical

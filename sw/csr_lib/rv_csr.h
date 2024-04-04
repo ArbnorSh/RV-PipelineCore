@@ -2,8 +2,10 @@
 
 #define __ASM_STR(x)	#x
 
-#define CSR_CYCLE		0xc00
-#define CSR_CYCLEH		0xc80
+#define CSR_MCYCLE	    0xb00
+#define CSR_MCYCLEH	    0xb80
+#define CSR_MINSTRET    0xb02
+#define CSR_MINSTRETH	0xb82
 #define CSR_MSTATUS		0x300
 #define CSR_MISA		0x301
 #define CSR_MIE			0x304
@@ -17,6 +19,14 @@
 #define CSR_MARCHID		0xf12
 #define CSR_MIMPID		0xf13
 #define CSR_MHARTID		0xf14
+
+typedef union {
+    uint64_t full;
+    struct {
+        uint32_t low;
+        uint32_t high;
+    } parts;
+} CSRUnion;
 
 #define csr_swap(csr, val)					\
 ({								\
@@ -77,3 +87,8 @@
 			      : : "rK" (__v)			\
 			      : "memory");			\
 })
+
+uint64_t get_mcycle(void);
+void set_mcycle(uint64_t value);
+uint64_t get_minstret(void);
+void set_minstret(uint64_t value);

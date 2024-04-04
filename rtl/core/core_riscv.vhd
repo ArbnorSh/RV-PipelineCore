@@ -60,10 +60,12 @@ architecture Behavioral of core_riscv is
                mret_instr_e : out STD_LOGIC;
                illegal_instruction_d : out STD_LOGIC;
                take_branch_e : out STD_LOGIC;
+               branch_e : out STD_LOGIC;
                env_call_instr_d : out STD_LOGIC;
                mul_instr_e : out STD_LOGIC;
                div_instr_e : out STD_LOGIC;
-               div_instr_d : out STD_LOGIC);
+               div_instr_d : out STD_LOGIC;
+               is_mispredict_tbranch_e, is_mispredict_ntbranch_e : in STD_LOGIC);
     end component;
     
     component datapath is
@@ -112,12 +114,14 @@ architecture Behavioral of core_riscv is
                illegal_instruction_d, load_store_m : in STD_LOGIC;
                is_instr_exception_w : out STD_LOGIC; 
                illegal_instruction_w, load_misaligned_m, store_misaligned_m: out STD_LOGIC;
+               branch_e : in STD_LOGIC;
                take_branch_e : in STD_LOGIC;
                is_decode_flush_d : out STD_LOGIC;
                env_call_instr_d : in STD_LOGIC;
                mul_instr_e : in STD_LOGIC;
                div_instr_e : in STD_LOGIC;
-               div_completed_e : out STD_LOGIC);
+               div_completed_e : out STD_LOGIC;
+               is_mispredict_tbranch_e, is_mispredict_ntbranch_e : out STD_LOGIC);
     end component;
     
     component hazard_unit is
@@ -158,7 +162,7 @@ architecture Behavioral of core_riscv is
     signal illegal_instruction_d, illegal_instruction_w, store_misaligned_m, load_misaligned_m : std_logic;
     signal is_instr_exception_w, take_branch_e, is_decode_flush_d: std_logic;
     signal env_call_instr_d, mul_instr_e, div_instr_e, div_completed_e : std_logic;
-    signal div_instr_d : std_logic;
+    signal div_instr_d, branch_e, is_mispredict_tbranch_e, is_mispredict_ntbranch_e : std_logic;
 
 begin
 
@@ -205,12 +209,16 @@ begin
         reg_write_w => reg_write_w,
         result_src_w => result_src_w,
         illegal_instruction_d => illegal_instruction_d,
+        branch_e => branch_e,
         take_branch_e => take_branch_e,
 
         env_call_instr_d => env_call_instr_d,
         mul_instr_e => mul_instr_e,
         div_instr_d => div_instr_d,
-        div_instr_e => div_instr_e
+        div_instr_e => div_instr_e,
+
+        is_mispredict_tbranch_e => is_mispredict_tbranch_e,
+        is_mispredict_ntbranch_e => is_mispredict_ntbranch_e
         );
         
      datapath_block: datapath port map(
@@ -278,13 +286,17 @@ begin
         illegal_instruction_w => illegal_instruction_w,
         load_misaligned_m => load_misaligned_m,
         store_misaligned_m => store_misaligned_m,
+        branch_e => branch_e,
         take_branch_e => take_branch_e,
         is_decode_flush_d => is_decode_flush_d,
 
         env_call_instr_d => env_call_instr_d,
         mul_instr_e => mul_instr_e,
         div_instr_e => div_instr_e,
-        div_completed_e => div_completed_e
+        div_completed_e => div_completed_e,
+
+        is_mispredict_tbranch_e => is_mispredict_tbranch_e,
+        is_mispredict_ntbranch_e => is_mispredict_ntbranch_e
         );
     
     hazard_block: hazard_unit port map(

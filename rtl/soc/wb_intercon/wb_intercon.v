@@ -28,18 +28,30 @@ module wb_intercon
     output wire        wb_dbus_ack_o,
     output wire        wb_dbus_err_o,
     output wire        wb_dbus_rty_o,
-    output wire [31:0] wb_rom_adr_o,
-    output wire [31:0] wb_rom_dat_o,
-    output wire  [3:0] wb_rom_sel_o,
-    output wire        wb_rom_we_o,
-    output wire        wb_rom_cyc_o,
-    output wire        wb_rom_stb_o,
-    output wire  [2:0] wb_rom_cti_o,
-    output wire  [1:0] wb_rom_bte_o,
-    input  wire [31:0] wb_rom_rdt_i,
-    input  wire        wb_rom_ack_i,
-    input  wire        wb_rom_err_i,
-    input  wire        wb_rom_rty_i,
+    output wire [31:0] wb_irom_adr_o,
+    output wire [31:0] wb_irom_dat_o,
+    output wire  [3:0] wb_irom_sel_o,
+    output wire        wb_irom_we_o,
+    output wire        wb_irom_cyc_o,
+    output wire        wb_irom_stb_o,
+    output wire  [2:0] wb_irom_cti_o,
+    output wire  [1:0] wb_irom_bte_o,
+    input  wire [31:0] wb_irom_rdt_i,
+    input  wire        wb_irom_ack_i,
+    input  wire        wb_irom_err_i,
+    input  wire        wb_irom_rty_i,
+    output wire [31:0] wb_drom_adr_o,
+    output wire [31:0] wb_drom_dat_o,
+    output wire  [3:0] wb_drom_sel_o,
+    output wire        wb_drom_we_o,
+    output wire        wb_drom_cyc_o,
+    output wire        wb_drom_stb_o,
+    output wire  [2:0] wb_drom_cti_o,
+    output wire  [1:0] wb_drom_bte_o,
+    input  wire [31:0] wb_drom_rdt_i,
+    input  wire        wb_drom_ack_i,
+    input  wire        wb_drom_err_i,
+    input  wire        wb_drom_rty_i,
     output wire [31:0] wb_ram_adr_o,
     output wire [31:0] wb_ram_dat_o,
     output wire  [3:0] wb_ram_sel_o,
@@ -101,31 +113,6 @@ module wb_intercon
     input  wire        wb_ptc_err_i,
     input  wire        wb_ptc_rty_i);
 
-wire [31:0] wb_ibus_rom_adr;
-wire [31:0] wb_ibus_rom_dat;
-wire  [3:0] wb_ibus_rom_sel;
-wire        wb_ibus_rom_we;
-wire        wb_ibus_rom_cyc;
-wire        wb_ibus_rom_stb;
-wire  [2:0] wb_ibus_rom_cti;
-wire  [1:0] wb_ibus_rom_bte;
-wire [31:0] wb_ibus_rom_rdt;
-wire        wb_ibus_rom_ack;
-wire        wb_ibus_rom_err;
-wire        wb_ibus_rom_rty;
-wire [31:0] wb_dbus_rom_adr;
-wire [31:0] wb_dbus_rom_dat;
-wire  [3:0] wb_dbus_rom_sel;
-wire        wb_dbus_rom_we;
-wire        wb_dbus_rom_cyc;
-wire        wb_dbus_rom_stb;
-wire  [2:0] wb_dbus_rom_cti;
-wire  [1:0] wb_dbus_rom_bte;
-wire [31:0] wb_dbus_rom_rdt;
-wire        wb_dbus_rom_ack;
-wire        wb_dbus_rom_err;
-wire        wb_dbus_rom_rty;
-
 wb_mux
   #(.num_slaves (1),
     .MATCH_ADDR ({32'h00000000}),
@@ -145,18 +132,18 @@ wb_mux
     .wbm_ack_o (wb_ibus_ack_o),
     .wbm_err_o (wb_ibus_err_o),
     .wbm_rty_o (wb_ibus_rty_o),
-    .wbs_adr_o ({wb_ibus_rom_adr}),
-    .wbs_dat_o ({wb_ibus_rom_dat}),
-    .wbs_sel_o ({wb_ibus_rom_sel}),
-    .wbs_we_o  ({wb_ibus_rom_we}),
-    .wbs_cyc_o ({wb_ibus_rom_cyc}),
-    .wbs_stb_o ({wb_ibus_rom_stb}),
-    .wbs_cti_o ({wb_ibus_rom_cti}),
-    .wbs_bte_o ({wb_ibus_rom_bte}),
-    .wbs_dat_i ({wb_ibus_rom_rdt}),
-    .wbs_ack_i ({wb_ibus_rom_ack}),
-    .wbs_err_i ({wb_ibus_rom_err}),
-    .wbs_rty_i ({wb_ibus_rom_rty}));
+    .wbs_adr_o ({wb_irom_adr_o}),
+    .wbs_dat_o ({wb_irom_dat_o}),
+    .wbs_sel_o ({wb_irom_sel_o}),
+    .wbs_we_o  ({wb_irom_we_o}),
+    .wbs_cyc_o ({wb_irom_cyc_o}),
+    .wbs_stb_o ({wb_irom_stb_o}),
+    .wbs_cti_o ({wb_irom_cti_o}),
+    .wbs_bte_o ({wb_irom_bte_o}),
+    .wbs_dat_i ({wb_irom_rdt_i}),
+    .wbs_ack_i ({wb_irom_ack_i}),
+    .wbs_err_i ({wb_irom_err_i}),
+    .wbs_rty_i ({wb_irom_rty_i}));
 
 wb_mux
   #(.num_slaves (6),
@@ -177,47 +164,17 @@ wb_mux
     .wbm_ack_o (wb_dbus_ack_o),
     .wbm_err_o (wb_dbus_err_o),
     .wbm_rty_o (wb_dbus_rty_o),
-    .wbs_adr_o ({wb_dbus_rom_adr, wb_ram_adr_o, wb_gpio_adr_o, wb_uart_adr_o, wb_sevenseg_adr_o, wb_ptc_adr_o}),
-    .wbs_dat_o ({wb_dbus_rom_dat, wb_ram_dat_o, wb_gpio_dat_o, wb_uart_dat_o, wb_sevenseg_dat_o, wb_ptc_dat_o}),
-    .wbs_sel_o ({wb_dbus_rom_sel, wb_ram_sel_o, wb_gpio_sel_o, wb_uart_sel_o, wb_sevenseg_sel_o, wb_ptc_sel_o}),
-    .wbs_we_o  ({wb_dbus_rom_we, wb_ram_we_o, wb_gpio_we_o, wb_uart_we_o, wb_sevenseg_we_o, wb_ptc_we_o}),
-    .wbs_cyc_o ({wb_dbus_rom_cyc, wb_ram_cyc_o, wb_gpio_cyc_o, wb_uart_cyc_o, wb_sevenseg_cyc_o, wb_ptc_cyc_o}),
-    .wbs_stb_o ({wb_dbus_rom_stb, wb_ram_stb_o, wb_gpio_stb_o, wb_uart_stb_o, wb_sevenseg_stb_o, wb_ptc_stb_o}),
-    .wbs_cti_o ({wb_dbus_rom_cti, wb_ram_cti_o, wb_gpio_cti_o, wb_uart_cti_o, wb_sevenseg_cti_o, wb_ptc_cti_o}),
-    .wbs_bte_o ({wb_dbus_rom_bte, wb_ram_bte_o, wb_gpio_bte_o, wb_uart_bte_o, wb_sevenseg_bte_o, wb_ptc_bte_o}),
-    .wbs_dat_i ({wb_dbus_rom_rdt, wb_ram_rdt_i, wb_gpio_rdt_i, wb_uart_rdt_i, wb_sevenseg_rdt_i, wb_ptc_rdt_i}),
-    .wbs_ack_i ({wb_dbus_rom_ack, wb_ram_ack_i, wb_gpio_ack_i, wb_uart_ack_i, wb_sevenseg_ack_i, wb_ptc_ack_i}),
-    .wbs_err_i ({wb_dbus_rom_err, wb_ram_err_i, wb_gpio_err_i, wb_uart_err_i, wb_sevenseg_err_i, wb_ptc_err_i}),
-    .wbs_rty_i ({wb_dbus_rom_rty, wb_ram_rty_i, wb_gpio_rty_i, wb_uart_rty_i, wb_sevenseg_rty_i, wb_ptc_rty_i}));
-
-wb_arbiter
-  #(.num_masters (2))
- wb_arbiter_rom
-   (.wb_clk_i  (wb_clk_i),
-    .wb_rst_i  (wb_rst_i),
-    .wbm_adr_i ({wb_ibus_rom_adr, wb_dbus_rom_adr}),
-    .wbm_dat_i ({wb_ibus_rom_dat, wb_dbus_rom_dat}),
-    .wbm_sel_i ({wb_ibus_rom_sel, wb_dbus_rom_sel}),
-    .wbm_we_i  ({wb_ibus_rom_we, wb_dbus_rom_we}),
-    .wbm_cyc_i ({wb_ibus_rom_cyc, wb_dbus_rom_cyc}),
-    .wbm_stb_i ({wb_ibus_rom_stb, wb_dbus_rom_stb}),
-    .wbm_cti_i ({wb_ibus_rom_cti, wb_dbus_rom_cti}),
-    .wbm_bte_i ({wb_ibus_rom_bte, wb_dbus_rom_bte}),
-    .wbm_dat_o ({wb_ibus_rom_rdt, wb_dbus_rom_rdt}),
-    .wbm_ack_o ({wb_ibus_rom_ack, wb_dbus_rom_ack}),
-    .wbm_err_o ({wb_ibus_rom_err, wb_dbus_rom_err}),
-    .wbm_rty_o ({wb_ibus_rom_rty, wb_dbus_rom_rty}),
-    .wbs_adr_o (wb_rom_adr_o),
-    .wbs_dat_o (wb_rom_dat_o),
-    .wbs_sel_o (wb_rom_sel_o),
-    .wbs_we_o  (wb_rom_we_o),
-    .wbs_cyc_o (wb_rom_cyc_o),
-    .wbs_stb_o (wb_rom_stb_o),
-    .wbs_cti_o (wb_rom_cti_o),
-    .wbs_bte_o (wb_rom_bte_o),
-    .wbs_dat_i (wb_rom_rdt_i),
-    .wbs_ack_i (wb_rom_ack_i),
-    .wbs_err_i (wb_rom_err_i),
-    .wbs_rty_i (wb_rom_rty_i));
+    .wbs_adr_o ({wb_drom_adr_o, wb_ram_adr_o, wb_gpio_adr_o, wb_uart_adr_o, wb_sevenseg_adr_o, wb_ptc_adr_o}),
+    .wbs_dat_o ({wb_drom_dat_o, wb_ram_dat_o, wb_gpio_dat_o, wb_uart_dat_o, wb_sevenseg_dat_o, wb_ptc_dat_o}),
+    .wbs_sel_o ({wb_drom_sel_o, wb_ram_sel_o, wb_gpio_sel_o, wb_uart_sel_o, wb_sevenseg_sel_o, wb_ptc_sel_o}),
+    .wbs_we_o  ({wb_drom_we_o, wb_ram_we_o, wb_gpio_we_o, wb_uart_we_o, wb_sevenseg_we_o, wb_ptc_we_o}),
+    .wbs_cyc_o ({wb_drom_cyc_o, wb_ram_cyc_o, wb_gpio_cyc_o, wb_uart_cyc_o, wb_sevenseg_cyc_o, wb_ptc_cyc_o}),
+    .wbs_stb_o ({wb_drom_stb_o, wb_ram_stb_o, wb_gpio_stb_o, wb_uart_stb_o, wb_sevenseg_stb_o, wb_ptc_stb_o}),
+    .wbs_cti_o ({wb_drom_cti_o, wb_ram_cti_o, wb_gpio_cti_o, wb_uart_cti_o, wb_sevenseg_cti_o, wb_ptc_cti_o}),
+    .wbs_bte_o ({wb_drom_bte_o, wb_ram_bte_o, wb_gpio_bte_o, wb_uart_bte_o, wb_sevenseg_bte_o, wb_ptc_bte_o}),
+    .wbs_dat_i ({wb_drom_rdt_i, wb_ram_rdt_i, wb_gpio_rdt_i, wb_uart_rdt_i, wb_sevenseg_rdt_i, wb_ptc_rdt_i}),
+    .wbs_ack_i ({wb_drom_ack_i, wb_ram_ack_i, wb_gpio_ack_i, wb_uart_ack_i, wb_sevenseg_ack_i, wb_ptc_ack_i}),
+    .wbs_err_i ({wb_drom_err_i, wb_ram_err_i, wb_gpio_err_i, wb_uart_err_i, wb_sevenseg_err_i, wb_ptc_err_i}),
+    .wbs_rty_i ({wb_drom_rty_i, wb_ram_rty_i, wb_gpio_rty_i, wb_uart_rty_i, wb_sevenseg_rty_i, wb_ptc_rty_i}));
 
 endmodule

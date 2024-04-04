@@ -33,7 +33,8 @@ entity csr_exec is
            trap_jump_addr : out STD_LOGIC_VECTOR (31 downto 0);
            trap_caught : out std_logic := '0';
            mret_instr : in std_logic;
-           pc_e : in std_logic_vector(31 downto 0));
+           pc_e : in std_logic_vector(31 downto 0);
+           valid_pc_w : in STD_LOGIC);
 end csr_exec;
 
 architecture Behavioral of csr_exec is
@@ -48,6 +49,7 @@ architecture Behavioral of csr_exec is
     signal read_csr : std_logic_vector(31 downto 0);
     
     signal csr_cycle : std_logic_vector(63 downto 0) := (others => '0');
+    signal csr_minstret : std_logic_vector(63 downto 0) := (others => '0');
     signal csr_misa : std_logic_vector(31 downto 0) := (others => '0');
     signal csr_mstatus : std_logic_vector(31 downto 0) := (others => '0');
     signal csr_mstatus_mie, csr_mstatus_mpie : std_logic;
@@ -67,8 +69,10 @@ architecture Behavioral of csr_exec is
     signal csr_mscratch : std_logic_vector(31 downto 0);
     
     -- Defines for CSR Address
-    constant CSR_CYCLE_ADDR : std_logic_vector(11 downto 0) := X"C00";
-    constant CSR_CYCLEH_ADDR : std_logic_vector(11 downto 0) := X"C80";
+    constant CSR_MCYCLE_ADDR : std_logic_vector(11 downto 0) := X"B00";
+    constant CSR_MCYCLEH_ADDR : std_logic_vector(11 downto 0) := X"B80";
+    constant CSR_MINSTRET_ADDR : std_logic_vector(11 downto 0) := X"B02";
+    constant CSR_MINSTRETH_ADDR : std_logic_vector(11 downto 0) := X"B82";
     constant CSR_MVENDOR_ID_ADDR : std_logic_vector(11 downto 0) := X"F11";
     constant CSR_MARCHITECTURE_ID_ADDR : std_logic_vector(11 downto 0) := X"F12";
     constant CSR_MIMPLEMENTATION_ID_ADDR : std_logic_vector(11 downto 0) := X"F13";
@@ -170,8 +174,28 @@ begin
         if rising_edge(clk) then   
             if reset then
                 csr_cycle <= (others => '0');
+            elsif (csr_address_write = CSR_MCYCLE_ADDR) and (write_enable = '1') then
+                csr_cycle(31 downto 0) <= write_value;
+            elsif (csr_address_write = CSR_MCYCLEH_ADDR) and (write_enable = '1') then
+                csr_cycle(63 downto 32) <= write_value;
             else
                 csr_cycle <= csr_cycle + 1;            
+            end if;
+        end if;
+    end process;
+    
+    -- MINSTRET and MINSTRETH
+    process(clk)
+    begin
+        if rising_edge(clk) then   
+            if reset then
+                csr_minstret <= (others => '0');
+            elsif (csr_address_write = CSR_MINSTRET_ADDR) and (write_enable = '1') then
+                csr_minstret(31 downto 0) <= write_value;
+            elsif (csr_address_write = CSR_MINSTRETH_ADDR) and (write_enable = '1') then
+                csr_minstret(63 downto 32) <= write_value;
+            elsif valid_pc_w then
+                csr_minstret <= csr_minstret + 1;      
             end if;
         end if;
     end process;
@@ -361,10 +385,14 @@ begin
         
         case csr_address_read is
             
-            when CSR_CYCLE_ADDR =>
+            when CSR_MCYCLE_ADDR =>
                 read_csr <= csr_cycle(31 downto 0);
-            when CSR_CYCLEH_ADDR =>
+            when CSR_MCYCLEH_ADDR =>
                 read_csr <= csr_cycle(63 downto 32);
+            when CSR_MINSTRET_ADDR =>
+                read_csr <= csr_minstret(31 downto 0);
+            when CSR_MINSTRETH_ADDR =>
+                read_csr <= csr_minstret(63 downto 32);
             when CSR_MVENDOR_ID_ADDR =>
                 read_csr <= VENDOR_ID;
             when CSR_MARCHITECTURE_ID_ADDR =>
