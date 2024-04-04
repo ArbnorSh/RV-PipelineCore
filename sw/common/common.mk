@@ -29,6 +29,9 @@ SIZE    = $(RISCV_PREFIX)size
 CFLAGS += -march=$(MARCH) -mabi=$(MABI) -Wall -ffunction-sections 
 CFLAGS += -fdata-sections -nostartfiles -ffreestanding -g -Os
 
+CFLAGS_STR := $(CFLAGS)
+CFLAGS += -DCFLAGS_STR="\"$(CFLAGS_STR)\""
+
 LFLAGS := -T $(LD_SCRIPT) -Wl,--gc-sections
 
 STARTUP_CODE := $(PROCESSOR_SW_COMMON_PATH)/crt0.S
