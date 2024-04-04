@@ -23,7 +23,7 @@ module rv_nexys(
         .clk (wb_clk),
         .reset (wb_rst),
         .i_data (i_data),
-        .o_data (gpio_out),
+        .o_data (o_data),
         .uart_tx (uart_tx),
         .sev_seg_an (sev_seg_an),
         .sev_seg_ca (sev_seg_ca)
