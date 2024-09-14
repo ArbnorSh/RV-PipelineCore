@@ -1,3 +1,11 @@
+-- SPDX-License-Identifier: BSD-3-Clause
+-- 
+-- Copyright (c) [2024], [Arbnor Shabani]
+-- All rights reserved.
+-- 
+-- This code is licensed under the BSD 3-Clause License.
+-- See the LICENSE file for more details.
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD_UNSIGNED.all;
@@ -31,33 +39,5 @@ begin
     
     rd1 <= reg_mem(to_integer(a1)) when to_integer(a1) /= 0 else (others => '0');
     rd2 <= reg_mem(to_integer(a2)) when to_integer(a2) /= 0 else (others => '0');
-
---    process(clk)
---    begin
-        
---        if falling_edge(clk) and write_enable = '1' then
---            reg_mem(to_integer(a3)) <= write_data;
---        end if;
-    
---    end process;
-    
---    process(a1, a2)
---    begin
-    
---        if (to_integer(a1) = 0) then
---            rd1 <= (others => '0');
---        else
---            rd1 <= reg_mem(to_integer(a1));
---        end if;
-        
---        if (to_integer(a2) = 0) then
---            rd2 <= (others => '0');
---        else
---            rd2 <= reg_mem(to_integer(a2));
---        end if;
-    
-    
---    end process;
-
 
 end Behavioral;

@@ -1,3 +1,11 @@
+-- SPDX-License-Identifier: BSD-3-Clause
+-- 
+-- Copyright (c) [2024], [Arbnor Shabani]
+-- All rights reserved.
+-- 
+-- This code is licensed under the BSD 3-Clause License.
+-- See the LICENSE file for more details.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
