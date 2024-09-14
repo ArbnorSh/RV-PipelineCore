@@ -38,7 +38,7 @@
 ../rtl/soc/ptc/ptc_top.v
 
 ./verilog/processor.v
-./verilog/dp_rom_wb.v
+./verilog/rom_wb.v
 ./verilog/ram_wb.v
 
 --top-module rvsocsim

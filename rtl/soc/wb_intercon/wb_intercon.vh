@@ -22,30 +22,18 @@ wire [31:0] wb_dbus_rdt;
 wire        wb_dbus_ack;
 wire        wb_dbus_err;
 wire        wb_dbus_rty;
-wire [31:0] wb_irom_adr;
-wire [31:0] wb_irom_dat;
-wire  [3:0] wb_irom_sel;
-wire        wb_irom_we;
-wire        wb_irom_cyc;
-wire        wb_irom_stb;
-wire  [2:0] wb_irom_cti;
-wire  [1:0] wb_irom_bte;
-wire [31:0] wb_irom_rdt;
-wire        wb_irom_ack;
-wire        wb_irom_err;
-wire        wb_irom_rty;
-wire [31:0] wb_drom_adr;
-wire [31:0] wb_drom_dat;
-wire  [3:0] wb_drom_sel;
-wire        wb_drom_we;
-wire        wb_drom_cyc;
-wire        wb_drom_stb;
-wire  [2:0] wb_drom_cti;
-wire  [1:0] wb_drom_bte;
-wire [31:0] wb_drom_rdt;
-wire        wb_drom_ack;
-wire        wb_drom_err;
-wire        wb_drom_rty;
+wire [31:0] wb_rom_adr;
+wire [31:0] wb_rom_dat;
+wire  [3:0] wb_rom_sel;
+wire        wb_rom_we;
+wire        wb_rom_cyc;
+wire        wb_rom_stb;
+wire  [2:0] wb_rom_cti;
+wire  [1:0] wb_rom_bte;
+wire [31:0] wb_rom_rdt;
+wire        wb_rom_ack;
+wire        wb_rom_err;
+wire        wb_rom_rty;
 wire [31:0] wb_ram_adr;
 wire [31:0] wb_ram_dat;
 wire  [3:0] wb_ram_sel;
@@ -134,30 +122,18 @@ wb_intercon wb_intercon0
     .wb_dbus_ack_o     (wb_dbus_ack),
     .wb_dbus_err_o     (wb_dbus_err),
     .wb_dbus_rty_o     (wb_dbus_rty),
-    .wb_irom_adr_o     (wb_irom_adr),
-    .wb_irom_dat_o     (wb_irom_dat),
-    .wb_irom_sel_o     (wb_irom_sel),
-    .wb_irom_we_o      (wb_irom_we),
-    .wb_irom_cyc_o     (wb_irom_cyc),
-    .wb_irom_stb_o     (wb_irom_stb),
-    .wb_irom_cti_o     (wb_irom_cti),
-    .wb_irom_bte_o     (wb_irom_bte),
-    .wb_irom_rdt_i     (wb_irom_rdt),
-    .wb_irom_ack_i     (wb_irom_ack),
-    .wb_irom_err_i     (wb_irom_err),
-    .wb_irom_rty_i     (wb_irom_rty),
-    .wb_drom_adr_o     (wb_drom_adr),
-    .wb_drom_dat_o     (wb_drom_dat),
-    .wb_drom_sel_o     (wb_drom_sel),
-    .wb_drom_we_o      (wb_drom_we),
-    .wb_drom_cyc_o     (wb_drom_cyc),
-    .wb_drom_stb_o     (wb_drom_stb),
-    .wb_drom_cti_o     (wb_drom_cti),
-    .wb_drom_bte_o     (wb_drom_bte),
-    .wb_drom_rdt_i     (wb_drom_rdt),
-    .wb_drom_ack_i     (wb_drom_ack),
-    .wb_drom_err_i     (wb_drom_err),
-    .wb_drom_rty_i     (wb_drom_rty),
+    .wb_rom_adr_o      (wb_rom_adr),
+    .wb_rom_dat_o      (wb_rom_dat),
+    .wb_rom_sel_o      (wb_rom_sel),
+    .wb_rom_we_o       (wb_rom_we),
+    .wb_rom_cyc_o      (wb_rom_cyc),
+    .wb_rom_stb_o      (wb_rom_stb),
+    .wb_rom_cti_o      (wb_rom_cti),
+    .wb_rom_bte_o      (wb_rom_bte),
+    .wb_rom_rdt_i      (wb_rom_rdt),
+    .wb_rom_ack_i      (wb_rom_ack),
+    .wb_rom_err_i      (wb_rom_err),
+    .wb_rom_rty_i      (wb_rom_rty),
     .wb_ram_adr_o      (wb_ram_adr),
     .wb_ram_dat_o      (wb_ram_dat),
     .wb_ram_sel_o      (wb_ram_sel),

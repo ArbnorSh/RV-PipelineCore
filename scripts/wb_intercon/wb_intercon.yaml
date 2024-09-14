@@ -4,15 +4,12 @@ parameters:
   endian: little
   masters:
     ibus:
-      slaves : [irom]
+      slaves : [rom]
     dbus: 
-      slaves : [drom, ram, gpio, uart, sevenseg, ptc]
+      slaves : [rom, ram, gpio, uart, sevenseg, ptc]
 
   slaves: 
-    irom:
-      offset : 0x00000000
-      size : 0x00200000
-    drom:
+    rom:
       offset : 0x00000000 
       size : 0x00200000
     ram: 
