@@ -1,4 +1,4 @@
-# PipelinedRiscVProcessor
+# RISC-V Processor
 The processor in compliance with the open RISC-V standard is designed using the hardware description language – `VHDL`. The focus was on addressing the challenge of verifying the correctness and functionality of the designed RISC-V processor through `simulation` and `testing`, ensuring that it meets RISC-V – `RV32IMZicsr` specifications and architectural requirements.
 
 # Pipelining
