@@ -4,13 +4,15 @@ The processor in compliance with the open RISC-V standard is designed using the 
 # Pipelining
 The processor designed has the classical pipeline implementation of five stages, with the unit for data forwarding, simple dynamic branch prediction, the handling of precise exceptions and interrupts, as well as the Wishbone interface for data and instructions.
 
-The block diagram of the designed pipelined processor is shown below
+![pipeline_procesor_ArbnorShabani](res/pipeline_procesor_ArbnorShabani.png)
+[2024] [Arbnor Shabani]. All rights reserved.
 
 
 # System on Chip
-I have integrated the processor into a SoC architecture to include embedded peripherals and experiment with various functionalities. The goal is to explore the interaction between the processor and its peripherals.
+The processor has been integrated into a SoC architecture to include embedded peripherals and experiment with various functionalities. The goal is to explore the interaction between the processor and its peripherals.
 This integration provides a platform to experiment with processor and peripheral interactions, such as handling Interrupts, Programmed I/O, and peripheral control.
-
+![SoC_image_ArbnorShabani](res/processor_integrated_into_soc.png)
+[2024] [Arbnor Shabani]. All rights reserved.
 # Simulation
 For simulation `Verilator` has been used for different reasons like:
 * Easier to write testbenches in C++.
@@ -28,7 +30,18 @@ The `example` provided in `Vidbo` was used and modified for our use cases.
 ## GTKWave
 GTKWave was used during debuggingg, when something was not working as it should, GTKWave made it possible to view the waveforms of the signals and find in which digital logic block the issue was.
 
-Example
+Code:
+```
+e8: 00000993    li s3, 0
+
+000000ec <count_loop>:
+ec: 01342023    sw s3,0(s0)
+f0: 00198993    add s3,s3,1
+f4: 0072a023    sw t2,0(t0)
+f8: 01c2a023    sw t3,0(t0)
+```
+![gtk_analysis_fetch](res/gtk_analysis_fetch.png)
+![gtk_analysis](res/gtk_analysis.png)
 
 ## How to run the software examples
 
@@ -56,17 +69,25 @@ $ python -m http.server --directory nexys-board
 Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
 ```
 The fourth step starts the `http` server, with the resources in directory nexys-board, then opening the URL in any browser, we can interact with the virtual Nexys board.
-
+![vidbo_simulation](res/virtual_board_simulation.png)
 # Implementation in FPGA Artix-7
 It has been implemented in a `Nexys4 DDR FPGA` with a maximum operating frequency of `50 MHz`.
 In Vivado import the project using the `tcl` file located in `rtl/vivado/nexys4_ddr`.
 
-Vivado can be used to generate the bitstream and program Nexys4 DDR. To run the software examples in Nexys4, follow the first two steps, then in Vivado simply `run` the project.
+Vivado can be used to generate the bitstream and program Nexys4 DDR. To run the software examples in Nexys4, follow the first two steps as with simulation, then in Vivado simply `run` the project.
 
 # Verification of the core using RISCOF
 RISCOF is used in order to test the RISC-V Processor for compatibility to the RISC-V user and privileged ISA specifications. In `riscv-target` is the implementation needed to run the tests, the comparison of the signatures for the core designed is done with sailCsim.
 
-# Hardware Utilization of the Processor Core
+# Hardware Utilization of the Processor Core in Nexys4 DDR
+
+| Resource      | Utilization   | Available   | Utilization % |
+| ------------- | ------------- | ------------- | ------------- |
+| LUT     | 2545   | 63400   | 4.01   |
+| LUTRAM  | 172   | 19000   | 0.91   |
+| FF  | 1419   | 126800   | 1.12   |
+| DSP  | 8   | 240   | 3.33   |
+| IO  | 175   | 210   | 83.33   |
 
 # CoreMark
 In the software examples, you can find the CoreMark benchmark, which when run using `dp_rom` and compiler optimization flags, the result was `0.9 CM/MHz`.
